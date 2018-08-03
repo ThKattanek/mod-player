@@ -111,5 +111,66 @@ void MODClass::MODRead(const char *filename)
 
     }
 
+    cout << endl << endl;
+
+    // MOD Song Length
+    file.read((char*)&mod_song_length,1);
+    cout << "Song Length: " << (int)mod_song_length << endl;
+
+    // MOD Song End Jump
+    file.read((char*)&mod_song_end_jump,1);
+    cout << "Song End Jump: " << (int)mod_song_end_jump << endl;
+
+    // MOD Song End Jump
+    file.read((char*)&mod_pattern_tbl,128);
+
+    cout << endl << "Pattern Table:" << endl;
+    int col_count = 0;
+
+    int max_pattern_nr = 0;
+
+    for(int i=0; i<128; i++)
+    {
+        if(mod_pattern_tbl[i] > max_pattern_nr)
+            max_pattern_nr = mod_pattern_tbl[i];
+
+        cout << std::hex  << (int)mod_pattern_tbl[i] << " ";
+        col_count++;
+        if(col_count == 16)
+        {
+            cout << endl;
+            col_count=0;
+        }
+    }
+
+    // Max Pattern Number
+    mod_pattern_count = max_pattern_nr+1;
+    cout << endl << "Pattern Count: " << (int)mod_pattern_count << endl;
+
+    // Channel Count
+    switch(mod_type_id)
+    {
+    case _MK: case _4CHN: case _4FLT: case _UNKNOWN:
+        mod_channel_count = 4;
+        break;
+    case _6CHN:
+        mod_channel_count = 6;
+        break;
+    case _8CHN: case _8FLT:
+        mod_channel_count = 8;
+        break;
+    default:
+        mod_channel_count = 0;
+    }
+    cout << "Chanel Count: " << (int)mod_channel_count << endl;
+
+    // Read Pattern Data
+    file.seekg(1084, ios::beg);
+
+    for(int i=0; i<mod_pattern_count; i++)
+    {
+
+    }
+
     file.close();
 }

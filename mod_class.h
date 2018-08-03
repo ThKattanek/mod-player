@@ -38,6 +38,11 @@ private:
     unsigned char mod_type_id;
     int mod_sample_count;
     SAMPLE mod_samples[31];
+    unsigned char mod_song_length;
+    unsigned char mod_song_end_jump;
+    unsigned char mod_pattern_tbl[128];
+    unsigned char mod_pattern_count;
+    unsigned char mod_channel_count;
 };
 
 #endif // MODCLASS_H
