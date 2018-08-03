@@ -2,11 +2,14 @@
 #include <math.h>
 #include <SDL2/SDL.h>
 
+#include "./mod_class.h"
+
 using namespace std;
 
 #undef main
 int main(int argc, char *argv[])
 {
+    cout << "Demo-01" << endl;
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
     SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
@@ -18,11 +21,14 @@ bool quit = false;
 
 uint8_t clr = 200;
 
-
 float r = 290;
 float x = 400;
 float y = 300;
 float N=5;
+
+    MODClass* mod;
+
+    mod = new MODClass("mods/test.mod");
 
 while (!quit)
 {
@@ -67,7 +73,7 @@ while (!quit)
         float px2=r*cos(360.0 * i/N)+x;
         float py2=r*sin(360.0 * i/N)+y;
 
-        SDL_RenderDrawLine(ren,px1,py1,px2,py2);
+        //SDL_RenderDrawLine(ren,px1,py1,px2,py2);
 
         px1 = px2;
         py1 = py2;
