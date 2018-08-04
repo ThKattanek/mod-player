@@ -9,26 +9,31 @@ using namespace std;
 #undef main
 int main(int argc, char *argv[])
 {
+    char* filename;
+
+    if(argc > 1)
+        filename = argv[1];
+
     cout << "Demo-01" << endl;
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
     SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
 
-SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-SDL_Event event;
-bool quit = false;
+    SDL_Event event;
+    bool quit = false;
 
-uint8_t clr = 200;
+    uint8_t clr = 200;
 
-float r = 290;
-float x = 400;
-float y = 300;
-float N=5;
+    float r = 290;
+    float x = 400;
+    float y = 300;
+    float N=5;
 
     MODClass* mod;
 
-    mod = new MODClass("mods/test.mod");
+    mod = new MODClass(filename);
 
 while (!quit)
 {
@@ -86,6 +91,7 @@ while (!quit)
     SDL_RenderPresent(ren);
 }
 
+    delete mod;
     SDL_Quit();
     return 0;
 }
