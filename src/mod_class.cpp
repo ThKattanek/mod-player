@@ -2,7 +2,22 @@
 
 MODClass::MODClass(const char *filename)
 {
+    for(int i=0; i<MAX_PATTERN;i++)
+    {
+        mod_pattern[i] = NULL;
+    }
+
     MODRead(filename);
+}
+
+MODClass::~MODClass()
+{
+    for(int i=0; i<MAX_PATTERN;i++)
+    {
+       // Pattern delete
+       if(mod_pattern != NULL)
+           delete[] mod_pattern[i];
+    }
 }
 
 void MODClass::MODRead(const char *filename)
@@ -143,7 +158,7 @@ void MODClass::MODRead(const char *filename)
         }
     }
 
-    // Max Pattern Number
+    // Pattern Count
     mod_pattern_count = max_pattern_nr+1;
     cout << endl << "Pattern Count: " << (int)mod_pattern_count << endl;
 
@@ -167,9 +182,38 @@ void MODClass::MODRead(const char *filename)
     // Read Pattern Data
     file.seekg(1084, ios::beg);
 
+    mod_pattern_size = MAX_ROW * mod_channel_count;
+
     for(int i=0; i<mod_pattern_count; i++)
     {
+        cout << "Pattern - " << i << endl;
+        if(mod_pattern[i] != NULL)
+            delete[] mod_pattern[i];
 
+        mod_pattern[i] = new NOTE[mod_pattern_size];
+        for(int j=0; j<mod_pattern_size; j++)
+        {
+            unsigned char note[4];
+            file.read((char*)note, 4);
+
+            mod_pattern[i][j].sample_number = note[0] & 0xF0;
+            mod_pattern[i][j].sample_number = note[2] >> 4;
+            mod_pattern[i][j].period = 0;
+            mod_pattern[i][j].effectcommand = 0;
+            mod_pattern[i][j].effectdata = 0;
+        }
+
+        int channel = 0;
+        for(int j=0; j<mod_pattern_size; j++)
+        {
+            cout << std::hex << (int)mod_pattern[i][j].sample_number << " | ";
+            channel++;
+            if (channel == mod_channel_count)
+            {
+                channel = 0;
+                cout << endl;
+            }
+        }
     }
 
     file.close();

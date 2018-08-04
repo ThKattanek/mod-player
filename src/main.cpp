@@ -73,7 +73,7 @@ while (!quit)
         float px2=r*cos(360.0 * i/N)+x;
         float py2=r*sin(360.0 * i/N)+y;
 
-        //SDL_RenderDrawLine(ren,px1,py1,px2,py2);
+        SDL_RenderDrawLine(ren,px1,py1,px2,py2);
 
         px1 = px2;
         py1 = py2;
