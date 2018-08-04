@@ -1,4 +1,5 @@
 *.user
 .directory
 build-*
+public_release
 install-*
