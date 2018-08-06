@@ -48,6 +48,8 @@ void MODClass::MODRead(const char *filename)
 
     if(!strcmp((const char*)mod_type, "M.K."))
         mod_type_id = _MK;
+    else if(!strcmp((const char*)mod_type, "M!K!"))
+        mod_type_id = _MK;
     else if(!strcmp((const char*)mod_type, "4CHN"))
         mod_type_id = _4CHN;
     else if(!strcmp((const char*)mod_type, "6CHN"))
@@ -58,6 +60,8 @@ void MODClass::MODRead(const char *filename)
         mod_type_id = _4FLT;
     else if(!strcmp((const char*)mod_type, "FLT8"))
         mod_type_id = _8FLT;
+    else if(!strcmp((const char*)mod_type, "OCTA"))
+        mod_type_id = _OCTA;
     else
     {
         mod_type_id = _UNKNOWN;
@@ -171,7 +175,7 @@ void MODClass::MODRead(const char *filename)
     case _6CHN:
         mod_channel_count = 6;
         break;
-    case _8CHN: case _8FLT:
+    case _8CHN: case _8FLT: case _OCTA:
         mod_channel_count = 8;
         break;
     default:
@@ -186,7 +190,6 @@ void MODClass::MODRead(const char *filename)
 
     for(int i=0; i<mod_pattern_count; i++)
     {
-        cout << "Pattern - " << i << endl;
         if(mod_pattern[i] != NULL)
             delete[] mod_pattern[i];
 
@@ -197,24 +200,72 @@ void MODClass::MODRead(const char *filename)
             file.read((char*)note, 4);
 
             mod_pattern[i][j].sample_number = note[0] & 0xF0;
-            mod_pattern[i][j].sample_number = note[2] >> 4;
-            mod_pattern[i][j].period = 0;
-            mod_pattern[i][j].effectcommand = 0;
-            mod_pattern[i][j].effectdata = 0;
+            mod_pattern[i][j].sample_number |= note[2] >> 4;
+            mod_pattern[i][j].period = note[1];
+            mod_pattern[i][j].period |= ((unsigned short)note[0]&0x0F) << 8;
+            mod_pattern[i][j].effectcommand = note[2] & 0x0F;
+            mod_pattern[i][j].effectdata = note[3];
+
+            NoteConvert(&mod_pattern[i][j],false);
         }
 
+        // Ausgabe des Pattern auf Konsole
+        cout << endl << endl << "--- Pattern - [" << i << "] ---" << endl << endl;
+
         int channel = 0;
+        int row = 0;
         for(int j=0; j<mod_pattern_size; j++)
         {
-            cout << std::hex << (int)mod_pattern[i][j].sample_number << " | ";
+            if(channel == 0) cout << std::hex << setfill('0') << setw(2) << row << "  | ";
+            //cout << std::dec << setw(4) << (int)mod_pattern[i][j].period << "-";
+            if(mod_pattern[i][j].note_number < 12)
+                cout << NOTE_STRING[mod_pattern[i][j].note_number] << (int)mod_pattern[i][j].oktave_number;
+            else
+                cout << "...";
+            cout << " ";
+
+            cout << std::hex << setfill('0') << setw(2) << (int)mod_pattern[i][j].sample_number << " ";
+            cout << std::hex << (int)mod_pattern[i][j].effectcommand << "-" << setfill('0') << setw(2) << (int)mod_pattern[i][j].effectdata <<  " | ";
             channel++;
             if (channel == mod_channel_count)
             {
                 channel = 0;
+                row++;
                 cout << endl;
             }
         }
     }
 
     file.close();
+}
+
+void MODClass::NoteConvert(NOTE *note, bool direction)
+{
+    if(note != NULL)
+    {
+        if(!direction)
+        {
+            // period to note
+            if(note->period > 0)
+            {
+                int i=0;
+                do{
+                }while ((i<60) && (PERIOD_TABLE [0][i++] != note->period));
+                i--;
+                if(i<60)
+                {
+                    note->note_number = i%12;
+                    note->oktave_number = i/12 + 2;
+                }
+                else
+                    note->note_number = 0x0f;   // Ungültige Notennummer
+            }
+            else
+                note->note_number = 0x0f;   // Ungültige Notennummer
+        }
+        else
+        {
+            // note to periode
+        }
+    }
 }
