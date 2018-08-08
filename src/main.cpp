@@ -16,10 +16,14 @@ using namespace std;
 
 void AudioMix(void* userdat, Uint8 *stream, int length);
 
-#define SAMPLE_NR 7
+#define SAMPLE_NR 9
 char* sample_data;
 int sample_len;
 int sample_pos;
+
+bool sample_loop;
+int sample_loop_start;
+int sample_loop_end;
 
 #undef main
 int main(int argc, char *argv[])
@@ -38,6 +42,13 @@ int main(int argc, char *argv[])
     sample_data = (char*)sample->data;
     sample_len = sample->length;
     sample_pos = 0;
+
+    if(sample->loop_length == 0)
+        sample_loop = false;
+    else sample_loop = true;
+
+    sample_loop_start = sample->loop_start;
+    sample_loop_end = sample->loop_start + sample->loop_length;
 
     cout << "Demo-01" << endl;
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
@@ -170,6 +181,12 @@ void AudioMix(void* userdat, Uint8 *stream, int length)
         data[i+1] = sample_data[sample_pos]*32;
 
         sample_pos++;
+        if(sample_loop)
+        {
+            if(sample_pos == sample_loop_end)
+                sample_pos = sample_loop_start;
+        }
+
         if(sample_pos == sample_len) sample_pos = 0;
     }
 }
