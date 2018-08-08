@@ -147,12 +147,12 @@ else()
 endif()
 
 # SDL2 Mixer
-find_package(SDL2_mixer REQUIRED)
-if(SDL2_MIXER_FOUND)
-    include_directories(${SDL2_MIXER_INCLUDE_DIR})
-else()
-    message(FATAL_ERROR "SDL2_MIXER wurde nicht gefunden.")
-endif()
+#find_package(SDL2_mixer REQUIRED)
+#if(SDL2_MIXER_FOUND)
+#    include_directories(${SDL2_MIXER_INCLUDE_DIR})
+#else()
+#    message(FATAL_ERROR "SDL2_MIXER wurde nicht gefunden.")
+#endif()
 
 ################### EXECUTABLE ####################
 

@@ -14,6 +14,14 @@ int main(int argc, char *argv[])
     if(argc > 1)
         filename = argv[1];
 
+
+    MODClass* mod;
+
+    mod = new MODClass(filename);
+
+    SAMPLE* sample0 = mod->GetSample(0);
+
+
     cout << "Demo-01" << endl;
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
@@ -31,9 +39,7 @@ int main(int argc, char *argv[])
     float y = 300;
     float N=5;
 
-    MODClass* mod;
 
-    mod = new MODClass(filename);
 
 while (!quit)
 {
@@ -68,8 +74,26 @@ while (!quit)
 
     SDL_SetRenderDrawColor(ren,0,0,0,0);
 
+    int px1=0;
+    int py1=0+300;
 
+    signed char* data = (signed char*)sample0->data;
+    float xmul = sample0->length / 800.0;
+    float xpos_data = 0.0;
 
+    for(int i=0; i<sample0->length; i++)
+    {
+        int px2 = i;
+        int py2 = data[(int)xpos_data]*-1+300;
+        xpos_data += xmul;
+
+        SDL_RenderDrawLine(ren,px1,py1,px2,py2);
+
+        px1 = px2;
+        py1 = py2;
+    }
+
+    /*
     float px1=r*cos(0)+x;
     float py1=r*sin(0)+y;
 
@@ -87,6 +111,7 @@ while (!quit)
     N++;
     if(N==400)
         N=0;
+    */
 
     SDL_RenderPresent(ren);
 }

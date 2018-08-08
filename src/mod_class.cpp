@@ -20,6 +20,13 @@ MODClass::~MODClass()
     }
 }
 
+SAMPLE *MODClass::GetSample(unsigned char sample_number)
+{
+    if(sample_number < mod_sample_count)
+        return &mod_samples[sample_number];
+    return NULL;
+}
+
 void MODClass::MODRead(const char *filename)
 {
     file.open(filename, ios::in | ios::binary);
@@ -233,6 +240,19 @@ void MODClass::MODRead(const char *filename)
                 row++;
                 cout << endl;
             }
+        }
+    }
+
+    // Sample Data
+
+    for(int i=0; i<mod_sample_count; i++)
+    {
+        if(mod_samples[i].length > 0)
+        {
+            if(mod_samples[i].data != NULL)
+                delete[] mod_samples[i].data;
+            mod_samples[i].data = new char[mod_samples[i].length];
+            file.read((char*)mod_samples[i].data,mod_samples[i].length);
         }
     }
 

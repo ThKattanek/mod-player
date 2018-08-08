@@ -109,6 +109,7 @@ struct SAMPLE
     unsigned char   volume;         //  0-64
     unsigned short  loop_start;
     unsigned short  loop_length;
+    void*           data = NULL;
 };
 
 struct NOTE
@@ -129,6 +130,14 @@ class MODClass
 public:
     MODClass(const char *filename);
     ~MODClass();
+
+    ///
+    /// \brief GetSample
+    /// \param sample_number - number of sample in the modfile
+    /// \return a pointer of a SAMPLE object
+    ///
+    SAMPLE* GetSample(unsigned char sample_number);
+
 private:
     ///
     /// \brief MODRead - reading a modfile
