@@ -16,7 +16,7 @@ using namespace std;
 
 void AudioMix(void* userdat, Uint8 *stream, int length);
 
-#define SAMPLE_NR 9
+#define SAMPLE_NR 12
 char* sample_data;
 int sample_len;
 int sample_pos;
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     sample_len = sample->length;
     sample_pos = 0;
 
-    if(sample->loop_length == 0)
+    if(sample->loop_length < 3)
         sample_loop = false;
     else sample_loop = true;
 
@@ -175,18 +175,29 @@ int main(int argc, char *argv[])
 void AudioMix(void* userdat, Uint8 *stream, int length)
 {
     unsigned short* data = (unsigned short*)stream;
-    for(int i=0; i<length/2; i+=2)
+    if(sample_data != NULL)
     {
-        data[i] = sample_data[sample_pos]*32;
-        data[i+1] = sample_data[sample_pos]*32;
-
-        sample_pos++;
-        if(sample_loop)
+        for(int i=0; i<length/2; i+=2)
         {
-            if(sample_pos == sample_loop_end)
-                sample_pos = sample_loop_start;
-        }
+            data[i] = sample_data[sample_pos]*32;
+            data[i+1] = sample_data[sample_pos]*32;
 
-        if(sample_pos == sample_len) sample_pos = 0;
+            sample_pos++;
+            if(sample_loop)
+            {
+                if(sample_pos == sample_loop_end)
+                    sample_pos = sample_loop_start;
+            }
+
+            if(sample_pos == sample_len) sample_pos = 0;
+        }
+    }
+    else
+    {
+        for(int i=0; i<length/2; i+=2)
+        {
+            data[i] = 0;
+            data[i+1] = 0;
+        }
     }
 }
