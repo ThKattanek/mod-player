@@ -128,7 +128,7 @@ class MODClass
 {
 
 public:
-    MODClass(const char *filename);
+    MODClass(const char *filename, int samplerate);
     ~MODClass();
 
     ///
@@ -137,6 +137,19 @@ public:
     /// \return a pointer of a SAMPLE object
     ///
     SAMPLE* GetSample(unsigned char sample_number);
+
+    ///
+    /// \brief FillAudioBuffer - Fill the AudioStream (16Bit/Stereo) with audio data
+    /// \param stream
+    /// \param length
+    ///
+    void FillAudioBuffer(signed short* stream, int length);
+
+    ///
+    /// \brief PlaySample - Play a single sample
+    /// \param sample_nr - number of playing sample (1-31)
+    ///
+    void PlaySample(unsigned char sample_nr);
 
 private:
     ///
@@ -155,6 +168,8 @@ private:
     bool mod_is_loaded;
     ifstream file;
 
+    int samplerate;
+
     // MOD
     char mod_name[21];
     unsigned char mod_type[5];
@@ -168,6 +183,11 @@ private:
     unsigned char mod_pattern_count;
     unsigned char mod_channel_count;
     NOTE *mod_pattern[128];
+
+    // Single Sample Play
+    bool sample_play_enable;
+    int sample_play_nr;
+    int sample_play_pos;
 };
 
 #endif // MODCLASS_H

@@ -1,7 +1,11 @@
 #include "mod_class.h"
 
-MODClass::MODClass(const char *filename)
+MODClass::MODClass(const char *filename, int samplerate)
 {
+    this->samplerate = samplerate;
+
+    sample_play_enable = false;
+
     for(int i=0; i<MAX_PATTERN;i++)
     {
         mod_pattern[i] = NULL;
@@ -25,6 +29,50 @@ SAMPLE *MODClass::GetSample(unsigned char sample_number)
     if(sample_number < mod_sample_count)
         return &mod_samples[sample_number];
     return NULL;
+}
+
+void MODClass::FillAudioBuffer(signed short *stream, int length)
+{
+    if(sample_play_enable)
+    {
+        char* sample_data = (char*)mod_samples[sample_play_nr].data;
+        for(int i=0; i<length; i+=2)
+        {
+            if(sample_play_pos < mod_samples[sample_play_nr].length)
+            {
+                stream[i] = sample_data[sample_play_pos]*32;
+                stream[i+1] = stream[i];
+                sample_play_pos++;
+            }
+            else
+            {
+                stream[i] = stream[i+1] = 0;
+            }
+        }
+
+        if(sample_play_pos == mod_samples[sample_play_nr].length)
+        {
+            sample_play_enable = false;
+            sample_play_pos = 0;
+        }
+    }
+    else
+    {
+        for(int i=0; i<length; i++)
+            stream[i] = 0;
+    }
+}
+
+void MODClass::PlaySample(unsigned char sample_nr)
+{
+    if(sample_nr > 0 && sample_nr < 32)
+    {
+        sample_play_nr = sample_nr-1;
+        sample_play_pos = 0;
+        sample_play_enable = true;
+
+        cout << "Play Sample Number: " << std::dec << setfill('0') << setw(2)  << (int)sample_nr << endl;
+    }
 }
 
 void MODClass::MODRead(const char *filename)

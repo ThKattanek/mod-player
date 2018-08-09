@@ -25,6 +25,8 @@ bool sample_loop;
 int sample_loop_start;
 int sample_loop_end;
 
+MODClass* mod = NULL;
+
 #undef main
 int main(int argc, char *argv[])
 {
@@ -33,10 +35,7 @@ int main(int argc, char *argv[])
     if(argc > 1)
         filename = argv[1];
 
-
-    MODClass* mod;
-
-    mod = new MODClass(filename);
+    mod = new MODClass(filename, AudioSampleRate);
     SAMPLE* sample = mod->GetSample(SAMPLE_NR);
 
     sample_data = (char*)sample->data;
@@ -91,6 +90,9 @@ int main(int argc, char *argv[])
     float N=5;
 
 
+    int numeric_input_count = 0;
+    unsigned char numeric_input_buffer[2];
+    unsigned char play_sample_number;
 
     while (!quit)
     {
@@ -109,12 +111,64 @@ int main(int argc, char *argv[])
                 case SDLK_MINUS:
                     N--;
                     break;
+
+                case SDLK_0:
+                    numeric_input_buffer[numeric_input_count] = 0;
+                    numeric_input_count++;
+                    break;
+                case SDLK_1:
+                    numeric_input_buffer[numeric_input_count] = 1;
+                    numeric_input_count++;
+                    break;
+                case SDLK_2:
+                    numeric_input_buffer[numeric_input_count] = 2;
+                    numeric_input_count++;
+                    break;
+                case SDLK_3:
+                    numeric_input_buffer[numeric_input_count] = 3;
+                    numeric_input_count++;
+                    break;
+                case SDLK_4:
+                    numeric_input_buffer[numeric_input_count] = 4;
+                    numeric_input_count++;
+                    break;
+                case SDLK_5:
+                    numeric_input_buffer[numeric_input_count] = 5;
+                    numeric_input_count++;
+                    break;
+                case SDLK_6:
+                    numeric_input_buffer[numeric_input_count] = 6;
+                    numeric_input_count++;
+                    break;
+                case SDLK_7:
+                    numeric_input_buffer[numeric_input_count] = 7;
+                    numeric_input_count++;
+                    break;
+                case SDLK_8:
+                    numeric_input_buffer[numeric_input_count] = 8;
+                    numeric_input_count++;
+                    break;
+                case SDLK_9:
+                    numeric_input_buffer[numeric_input_count] = 9;
+                    numeric_input_count++;
+                    break;
+                case SDLK_ESCAPE:
+                    numeric_input_count = 0;
+                    break;
+
                 default:
                     break;
                 }
+                if(numeric_input_count==2)
+                {
+                    play_sample_number = numeric_input_buffer[0]*10;
+                    play_sample_number += numeric_input_buffer[1];
+                    numeric_input_count=0;
+                    mod->PlaySample(play_sample_number);
+                }
             }
             if (event.type == SDL_MOUSEBUTTONDOWN){
-                quit = true;
+               // quit = true;
             }
         }
 
@@ -174,7 +228,15 @@ int main(int argc, char *argv[])
 
 void AudioMix(void* userdat, Uint8 *stream, int length)
 {
-    unsigned short* data = (unsigned short*)stream;
+    if(mod != NULL)
+        mod->FillAudioBuffer((signed short*)stream, length/2);
+    else
+    {
+        for(int i=0; i<length; i++)
+            stream[i] = 0;
+    }
+    /*
+    signed short* data = (signed short*)stream;
     if(sample_data != NULL)
     {
         for(int i=0; i<length/2; i+=2)
@@ -200,4 +262,5 @@ void AudioMix(void* userdat, Uint8 *stream, int length)
             data[i+1] = 0;
         }
     }
+    */
 }
