@@ -377,14 +377,14 @@ void MODClass::NextLine()
 
     for(int i=pattern_line_adr; i<pattern_line_adr + mod_channel_count; i++)
     {
-        if(akt_pattern[pattern_line_adr].note_number < 12)
-            cout << NOTE_STRING[akt_pattern[pattern_line_adr].note_number] << (int)akt_pattern[pattern_line_adr].oktave_number;
+        if(akt_pattern[i].note_number < 12)
+            cout << NOTE_STRING[akt_pattern[i].note_number] << (int)akt_pattern[i].oktave_number;
         else
             cout << "...";
         cout << " ";
 
-        cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[pattern_line_adr].sample_number << " ";
-        cout << std::hex << (int)akt_pattern[pattern_line_adr].effectcommand << "-" << setfill('0') << setw(2) << (int)akt_pattern[pattern_line_adr].effectdata <<  " | ";
+        cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[i].sample_number << " ";
+        cout << std::hex << (int)akt_pattern[i].effectcommand << "-" << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
     }
     cout << endl;
 
