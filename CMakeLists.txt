@@ -1,5 +1,5 @@
 #
-# Oldscool Intro by th.kattanek
+# mod-player by th.kattanek
 #
 ###################################################
 # Options
@@ -139,12 +139,12 @@ else()
 endif()
 
 # SDL2 Image
-find_package(SDL2_image REQUIRED)
-if(SDL2_IMAGE_FOUND)
-    include_directories(${SDL2_IMAGE_INCLUDE_DIR})
-else()
-    message(FATAL_ERROR "SDL2_IMAGE wurde nicht gefunden.")
-endif()
+#find_package(SDL2_image REQUIRED)
+#if(SDL2_IMAGE_FOUND)
+#    include_directories(${SDL2_IMAGE_INCLUDE_DIR})
+#else()
+#    message(FATAL_ERROR "SDL2_IMAGE wurde nicht gefunden.")
+#endif()
 
 # SDL2 Mixer
 #find_package(SDL2_mixer REQUIRED)
@@ -163,8 +163,8 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${SDL2_IMAGE_LIBRARY})
-target_link_libraries(${PROJECT_NAME} ${SDL2_MIXER_LIBRARY})
+#target_link_libraries(${PROJECT_NAME} ${SDL2_IMAGE_LIBRARY})
+#target_link_libraries(${PROJECT_NAME} ${SDL2_MIXER_LIBRARY})
 
 if(WIN32)
     target_link_libraries(${PROJECT_NAME} ${WIN32_LIBS})
