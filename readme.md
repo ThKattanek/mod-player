@@ -4,9 +4,6 @@
 
 ## Used libraries
 * SDL2
-* SLD2_image
-* SDL2_gfx
-* SDL2_mixer
 
 ## Build
 ```bash
