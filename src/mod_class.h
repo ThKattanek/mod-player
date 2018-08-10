@@ -101,6 +101,20 @@ static const unsigned short PERIOD_TABLE[16][60] = {                        // t
 #define MAX_PATTERN 128
 #define MAX_ROW 64
 
+#define PAL
+//#define NTSC
+
+#define PAL_FPS 50
+#define NTSC_FPS 60
+
+#ifdef PAL
+    #define FPS PAL_FPS
+#else
+    #ifdef NTSC
+        #define FPS NTSC_FPS
+    #endif
+#endif
+
 struct SAMPLE
 {
     char name[23];
@@ -151,6 +165,10 @@ public:
     ///
     void PlaySample(unsigned char sample_nr);
 
+    void MODPlay(void);
+    void MODStop(void);
+    void MODPause(void);
+
 private:
     ///
     /// \brief MODRead - reading a modfile
@@ -164,6 +182,8 @@ private:
     /// \param direction - false = period to note | true = note to period
     ///
     void NoteConvert(NOTE* note, bool direction);
+
+    void NextLine(void);
 
     bool mod_is_loaded;
     ifstream file;
@@ -183,6 +203,18 @@ private:
     unsigned char mod_pattern_count;
     unsigned char mod_channel_count;
     NOTE *mod_pattern[128];
+
+    // MOD Playing
+    bool    mod_is_playing;
+
+    int     time_counter_start;   // Samplerate / 50 for PAL or 60 for NTSC
+    int     time_counter;
+    int     thick_counter_start;
+    int     thick_counter;
+
+    int     song_pos;
+    NOTE*   akt_pattern;
+    int     akt_pattern_line;
 
     // Single Sample Play
     bool sample_play_enable;

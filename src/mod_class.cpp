@@ -4,6 +4,9 @@ MODClass::MODClass(const char *filename, int samplerate)
 {
     this->samplerate = samplerate;
 
+    this->time_counter_start = samplerate / FPS;
+    this->time_counter = time_counter_start;
+
     sample_play_enable = false;
 
     for(int i=0; i<MAX_PATTERN;i++)
@@ -33,34 +36,53 @@ SAMPLE *MODClass::GetSample(unsigned char sample_number)
 
 void MODClass::FillAudioBuffer(signed short *stream, int length)
 {
-    if(sample_play_enable)
+    if(mod_is_playing)
     {
-        char* sample_data = (char*)mod_samples[sample_play_nr].data;
         for(int i=0; i<length; i+=2)
         {
-            if(sample_play_pos < mod_samples[sample_play_nr].length)
+            time_counter--;
+            if(time_counter == 0)
             {
-                stream[i] = sample_data[sample_play_pos]*32;
-                stream[i+1] = stream[i];
-                sample_play_pos++;
+                time_counter = time_counter_start;
+                thick_counter--;
+                if(thick_counter == 0)
+                {
+                    thick_counter = thick_counter_start;
+                    NextLine();
+                }
             }
-            else
-            {
-                stream[i] = stream[i+1] = 0;
-            }
-        }
 
-        if(sample_play_pos == mod_samples[sample_play_nr].length)
-        {
-            sample_play_enable = false;
-            sample_play_pos = 0;
+            stream[i] = stream[i+1] = 0;
         }
     }
-    else
-    {
-        for(int i=0; i<length; i++)
-            stream[i] = 0;
-    }
+    else if(sample_play_enable)
+        {
+            char* sample_data = (char*)mod_samples[sample_play_nr].data;
+            for(int i=0; i<length; i+=2)
+            {
+                if(sample_play_pos < mod_samples[sample_play_nr].length)
+                {
+                    stream[i] = sample_data[sample_play_pos]*32;
+                    stream[i+1] = stream[i];
+                    sample_play_pos++;
+                }
+                else
+                {
+                    stream[i] = stream[i+1] = 0;
+                }
+            }
+
+            if(sample_play_pos == mod_samples[sample_play_nr].length)
+            {
+                sample_play_enable = false;
+                sample_play_pos = 0;
+            }
+        }
+        else
+        {
+            for(int i=0; i<length; i++)
+                stream[i] = 0;
+        }
 }
 
 void MODClass::PlaySample(unsigned char sample_nr)
@@ -77,6 +99,8 @@ void MODClass::PlaySample(unsigned char sample_nr)
 
 void MODClass::MODRead(const char *filename)
 {
+    MODStop();
+
     file.open(filename, ios::in | ios::binary);
     if(!file.is_open())
     {
@@ -336,4 +360,64 @@ void MODClass::NoteConvert(NOTE *note, bool direction)
             // note to periode
         }
     }
+}
+
+void MODClass::NextLine()
+{
+    if(akt_pattern_line == 0)
+    {
+        int pattern_nr = mod_pattern_tbl[song_pos];
+        akt_pattern = mod_pattern[pattern_nr];
+
+        cout << "Pattern Nr: " << pattern_nr << endl;
+    }
+
+    cout << std::hex << setfill('0') << setw(2) << akt_pattern_line << "  | ";
+    int pattern_line_adr = mod_channel_count * akt_pattern_line;
+
+    for(int i=pattern_line_adr; i<pattern_line_adr + mod_channel_count; i++)
+    {
+        if(akt_pattern[pattern_line_adr].note_number < 12)
+            cout << NOTE_STRING[akt_pattern[pattern_line_adr].note_number] << (int)akt_pattern[pattern_line_adr].oktave_number;
+        else
+            cout << "...";
+        cout << " ";
+
+        cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[pattern_line_adr].sample_number << " ";
+        cout << std::hex << (int)akt_pattern[pattern_line_adr].effectcommand << "-" << setfill('0') << setw(2) << (int)akt_pattern[pattern_line_adr].effectdata <<  " | ";
+    }
+    cout << endl;
+
+    akt_pattern_line++;
+    if(akt_pattern_line == 64)
+    {
+        cout << endl;
+        akt_pattern_line = 0;
+        song_pos++;
+        if(song_pos == mod_song_length)
+            song_pos = 0;
+    }
+}
+
+void MODClass::MODPlay()
+{
+    thick_counter_start = 6;
+    thick_counter = thick_counter_start;
+
+    song_pos = 0;
+    akt_pattern_line = 0;
+
+    NextLine();
+
+    mod_is_playing = true;
+}
+
+void MODClass::MODStop()
+{
+    mod_is_playing = false;
+}
+
+void MODClass::MODPause()
+{
+
 }

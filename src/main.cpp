@@ -76,8 +76,9 @@ int main(int argc, char *argv[])
         cerr << "Audio Format \"AUDIO_S16 wird nicht unterstuetzt." << endl;
     }
 
-
     SDL_PauseAudio(0);
+
+    mod->MODPlay();
 
     SDL_Event event;
     bool quit = false;
