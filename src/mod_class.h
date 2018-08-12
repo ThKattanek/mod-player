@@ -138,6 +138,15 @@ struct NOTE
     unsigned char   oktave_number;  // 1-5
 };
 
+struct CHANNEL
+{
+    float   frequenzy;
+    bool    loop_enable;
+    int     loop_start;
+    int     loop_length;
+    void*   data = NULL;
+};
+
 class MODClass
 {
 
