@@ -8,6 +8,7 @@ MODClass::MODClass(const char *filename, int samplerate)
     this->time_counter = time_counter_start;
 
     sample_play_enable = false;
+    channels = NULL;
 
     for(int i=0; i<MAX_PATTERN;i++)
     {
@@ -51,8 +52,7 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
                     NextLine();
                 }
             }
-
-            stream[i] = stream[i+1] = 0;
+            CalcNextSamples(stream+i);
         }
     }
     else if(sample_play_enable)
@@ -262,6 +262,13 @@ void MODClass::MODRead(const char *filename)
     }
     cout << "Chanel Count: " << (int)mod_channel_count << endl;
 
+    if(channels != NULL)
+        delete[] channels;
+    else
+        channels = new CHANNEL[mod_channel_count];
+
+
+
     // Read Pattern Data
     file.seekg(1084, ios::beg);
 
@@ -375,8 +382,10 @@ void MODClass::NextLine()
     cout << std::hex << setfill('0') << setw(2) << akt_pattern_line << "  | ";
     int pattern_line_adr = mod_channel_count * akt_pattern_line;
 
+    int channel_nr = 0;
     for(int i=pattern_line_adr; i<pattern_line_adr + mod_channel_count; i++)
     {
+        CalcChannelData(channel_nr, &akt_pattern[i]);
         if(akt_pattern[i].note_number < 12)
             cout << NOTE_STRING[akt_pattern[i].note_number] << (int)akt_pattern[i].oktave_number;
         else
@@ -385,6 +394,7 @@ void MODClass::NextLine()
 
         cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[i].sample_number << " ";
         cout << std::hex << (int)akt_pattern[i].effectcommand << "-" << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
+        channel_nr++;
     }
     cout << endl;
 
@@ -397,6 +407,53 @@ void MODClass::NextLine()
         if(song_pos == mod_song_length)
             song_pos = 0;
     }
+}
+
+void MODClass::CalcChannelData(int channel_nr, NOTE *note)
+{
+    // Wenn Period == 0 dann keine Änderung der Periode
+    if(note->period > 0)
+    {
+        channels[channel_nr].play = true;
+        channels[channel_nr].frequency = note->period;
+        channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
+        channels[channel_nr].sample_length = mod_samples[note->sample_number].length;
+        channels[channel_nr].sample_pos = 0;
+    }
+
+    // Effekte
+    switch(note->effectcommand)
+    {
+    case 0x0F:      // SetSpeed
+        thick_counter_start = note->effectdata;
+        break;
+    default:
+        break;
+    }
+}
+
+void MODClass::CalcNextSamples(signed short *samples)
+{
+    signed short mix_chn = 0;
+    for(int i=0; i<mod_channel_count; i++)
+    {
+        if(channels[i].play)
+        {
+            signed char *sample_data = (signed char*)channels[i].sample_data;
+            mix_chn += sample_data[channels[i].sample_pos];
+
+            channels[i].sample_pos++;
+            if(channels[i].sample_pos == channels[i].sample_length)
+            {
+                channels[i].sample_pos = 0;
+                channels[i].play = false;
+            }
+        }
+        else
+            mix_chn += 0;
+    }
+
+    samples[0] = samples[1] = mix_chn;
 }
 
 void MODClass::MODPlay()

@@ -140,11 +140,14 @@ struct NOTE
 
 struct CHANNEL
 {
-    float   frequenzy;
-    bool    loop_enable;
-    int     loop_start;
-    int     loop_length;
-    void*   data = NULL;
+    bool    play = false;
+    float   frequency = 0;
+    bool    loop_enable = false;
+    int     loop_start = 0;
+    int     loop_length = 0;
+    void*   sample_data = NULL;
+    int     sample_length = 0;
+    int     sample_pos = 0;
 };
 
 class MODClass
@@ -193,6 +196,9 @@ private:
     void NoteConvert(NOTE* note, bool direction);
 
     void NextLine(void);
+    void CalcChannelData(int channel_nr, NOTE* note);
+
+    void CalcNextSamples(signed short *samples);
 
     bool mod_is_loaded;
     ifstream file;
@@ -224,6 +230,8 @@ private:
     int     song_pos;
     NOTE*   akt_pattern;
     int     akt_pattern_line;
+
+    CHANNEL *channels;
 
     // Single Sample Play
     bool sample_play_enable;

@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define AudioSampleRate 22050
+#define AudioSampleRate 44100
 
 #ifdef _WIN32
     #define AudioPufferSize (882)    // 882 bei 44.100 Khz
@@ -220,6 +220,7 @@ int main(int argc, char *argv[])
         */
 
         SDL_RenderPresent(ren);
+        SDL_Delay(1);
     }
 
     delete mod;
