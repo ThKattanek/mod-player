@@ -141,7 +141,8 @@ struct NOTE
 struct CHANNEL
 {
     bool    play = false;
-    float   frequency = 0;
+    int     frequency = 0;
+    int     frequ_counter = 0;
     bool    loop_enable = false;
     int     loop_start = 0;
     int     loop_length = 0;

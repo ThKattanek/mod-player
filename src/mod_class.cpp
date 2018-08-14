@@ -415,9 +415,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     if(note->period > 0)
     {
         channels[channel_nr].play = true;
-        channels[channel_nr].frequency = note->period;
+        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = note->period / 56;     // div 14 for samplerate 44100, 28 for 22050 ...
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
-        channels[channel_nr].sample_length = mod_samples[note->sample_number].length;
+        channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
         channels[channel_nr].sample_pos = 0;
     }
 
@@ -425,6 +425,7 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     switch(note->effectcommand)
     {
     case 0x0F:      // SetSpeed
+        if(note->effectdata < 32)
         thick_counter_start = note->effectdata;
         break;
     default:
@@ -440,20 +441,26 @@ void MODClass::CalcNextSamples(signed short *samples)
         if(channels[i].play)
         {
             signed char *sample_data = (signed char*)channels[i].sample_data;
-            mix_chn += sample_data[channels[i].sample_pos];
+            //if(i==1)
+                mix_chn += sample_data[channels[i].sample_pos];
 
-            channels[i].sample_pos++;
-            if(channels[i].sample_pos == channels[i].sample_length)
+            channels[i].frequ_counter--;
+            if(channels[i].frequ_counter == 0)
             {
-                channels[i].sample_pos = 0;
-                channels[i].play = false;
+                channels[i].frequ_counter = channels[i].frequency;
+                channels[i].sample_pos++;
+                if(channels[i].sample_pos == channels[i].sample_length)
+                {
+                    channels[i].sample_pos = 0;
+                    channels[i].play = false;
+                }
             }
         }
         else
             mix_chn += 0;
     }
 
-    samples[0] = samples[1] = mix_chn;
+    samples[0] = samples[1] = mix_chn * 64;
 }
 
 void MODClass::MODPlay()
