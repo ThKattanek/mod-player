@@ -415,7 +415,12 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     if(note->period > 0)
     {
         channels[channel_nr].play = true;
-        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = note->period / 56;     // div 14 for samplerate 44100, 28 for 22050 ...
+
+        //float play_samplerate = 7093789.2 / (note->period * 2);
+        //channels[channel_nr].frequency = channels[channel_nr].frequ_counter = 44100 / (int)play_samplerate;     // div 14 for samplerate 44100, 28 for 22050 ...
+
+        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = note->period / 56;
+
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
         channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
         channels[channel_nr].sample_pos = 0;
@@ -441,7 +446,7 @@ void MODClass::CalcNextSamples(signed short *samples)
         if(channels[i].play)
         {
             signed char *sample_data = (signed char*)channels[i].sample_data;
-            //if(i==1)
+            //if(i==0)
                 mix_chn += sample_data[channels[i].sample_pos];
 
             channels[i].frequ_counter--;
