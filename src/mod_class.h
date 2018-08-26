@@ -159,7 +159,7 @@ struct CHANNEL
     int     loop_length = 0;
     void*   sample_data = NULL;
     int     sample_length = 0;
-    int     sample_pos = 0;
+    int     sample_pos = 2;
 };
 
 class MODClass

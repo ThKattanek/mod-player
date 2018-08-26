@@ -459,9 +459,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].play = true;
 
         channels[channel_nr].period = note->period;
-        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = ((note->period) /84.0);
+        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = ((note->period) /81.0);
 
-        channels[channel_nr].sample_pos = 0;
+        channels[channel_nr].sample_pos = 2;
     }
 
     if(note->sample_number > 0)
@@ -470,7 +470,7 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
         channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
-        channels[channel_nr].sample_pos = 0;
+        channels[channel_nr].sample_pos = 2;
 
         channels[channel_nr].loop_start = mod_samples[note->sample_number-1].loop_start;
         channels[channel_nr].loop_length = mod_samples[note->sample_number-1].loop_length;
@@ -487,11 +487,11 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     {
     case 0x01:      // Slide up (Portamento Up)
         channels[channel_nr].period -= note->effectdata * 3;
-        channels[channel_nr].frequency = ((channels[channel_nr].period) /84.0);
+        channels[channel_nr].frequency = ((channels[channel_nr].period) /81.0);
         break;
     case 0x02:      // Slide down (Portamento Down)
         channels[channel_nr].period += note->effectdata * 3;
-        channels[channel_nr].frequency = ((channels[channel_nr].period) /84.0);
+        channels[channel_nr].frequency = ((channels[channel_nr].period) /81.0);
         break;
     case 0x0A:      // Volume Slide
         slide_up = note->effectdata >> 4;
@@ -521,6 +521,23 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     case 0x0D:      // Pattern Break
         pattern_break = true;
         pattern_break_line = (note->effectdata >> 4) * 10 + (note->effectdata & 0x0f);
+        break;
+    case 0x0E:      // Extended Effects
+            switch(note->effectdata >> 4)
+            {
+            case 0x0A:  // Fine Volume Slide Up
+                channels[channel_nr].volume += ((note->effectdata & 0x0f) / 64.0f);
+                if(channels[channel_nr].volume > 1.0) channels[channel_nr].volume = 1.0;
+                break;
+            case 0x0B:  // Fine Volume Slide Down
+                channels[channel_nr].volume -= ((note->effectdata & 0x0f) / 64.0f);
+                if(channels[channel_nr].volume < 0.0) channels[channel_nr].volume = 0.0;
+                break;
+            case 0x0E:  // Delay
+                if((note->effectdata & 0x0f) > 0)
+                    thick_counter = thick_counter_start *  ((note->effectdata & 0x0f)-1);
+                break;
+            }
         break;
     case 0x0F:      // SetSpeed
         if(note->effectdata < 32)
@@ -571,7 +588,7 @@ void MODClass::CalcNextSamples(signed short *samples)
                     {
                         if(channels[i].sample_pos == channels[i].sample_length)
                         {
-                            channels[i].sample_pos = 0;
+                            channels[i].sample_pos = 2;
                             channels[i].play = false;
                         }
                     }
