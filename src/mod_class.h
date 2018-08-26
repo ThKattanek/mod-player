@@ -11,6 +11,8 @@ using namespace std;
 enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _UNKNOWN};
 
 static const char FINETUNETBL[] = {0, 1, 2, 3, 4, 5, 6, 7, -8, -7, -6, -5, -4, -3, -2, -1};
+static const int  CHANNEL_PAN[8] = {0,1,1,0,0,1,1,0};   // 0=links, 1=rechts
+static const int  CHANNEL_PAN_INV[8] = {1,0,0,1,1,0,0,1};   // 0=links, 1=rechts
 
 // C-C#-D-D#-E-F-F#-G-G#-A-A#-H
 
@@ -107,11 +109,16 @@ static const unsigned short PERIOD_TABLE[16][60] = {                        // t
 #define PAL_FPS 50
 #define NTSC_FPS 60
 
+#define PAL_CLOCK 7093789.2
+#define NTSC_CLOCK 7159090.5
+
 #ifdef PAL
     #define FPS PAL_FPS
+    #define CLOCK PAL_CLOCK
 #else
-    #ifdef NTSC
-        #define FPS NTSC_FPS
+        #ifdef NTSC
+            #define FPS NTSC_FPS
+            #define CLOCK NTSC_CLOCK
     #endif
 #endif
 
@@ -141,8 +148,12 @@ struct NOTE
 struct CHANNEL
 {
     bool    play = false;
-    int     frequency = 0;
-    int     frequ_counter = 0;
+    float   volume = 1.0f;
+    int     volume_slide = 0;   // 0=stop, 1=up, 2=down
+    int     volume_slide_value = 0;
+    int     period = 0;
+    float   frequency = 0.0;
+    float   frequ_counter = 0.0;
     bool    loop_enable = false;
     int     loop_start = 0;
     int     loop_length = 0;
@@ -200,6 +211,7 @@ private:
     void CalcChannelData(int channel_nr, NOTE* note);
 
     void CalcNextSamples(signed short *samples);
+    void CalcNextThick();
 
     bool mod_is_loaded;
     ifstream file;
@@ -233,6 +245,11 @@ private:
     int     akt_pattern_line;
 
     CHANNEL *channels;
+
+    float   channel_pan;        // 0.0 = strict channel sepeparation, left and right
+                                // 1.0 = left and right channel is equal
+    bool    pattern_break;
+    int     pattern_break_line;
 
     // Single Sample Play
     bool sample_play_enable;

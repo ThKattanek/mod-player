@@ -8,6 +8,7 @@ MODClass::MODClass(const char *filename, int samplerate)
     this->time_counter = time_counter_start;
 
     sample_play_enable = false;
+    channel_pan = 0.5;
     channels = NULL;
 
     for(int i=0; i<MAX_PATTERN;i++)
@@ -46,6 +47,7 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
             {
                 time_counter = time_counter_start;
                 thick_counter--;
+                CalcNextThick();
                 if(thick_counter == 0)
                 {
                     thick_counter = thick_counter_start;
@@ -268,6 +270,14 @@ void MODClass::MODRead(const char *filename)
         channels = new CHANNEL[mod_channel_count];
 
 
+    for(int i=0; i< mod_channel_count; i++)
+    {
+        channels[i].sample_data = NULL;
+        channels[i].loop_enable = false;
+        channels[i].play = false;
+        channels[i].volume = 1.0;
+    }
+
 
     // Read Pattern Data
     file.seekg(1084, ios::beg);
@@ -303,15 +313,23 @@ void MODClass::MODRead(const char *filename)
         for(int j=0; j<mod_pattern_size; j++)
         {
             if(channel == 0) cout << std::hex << setfill('0') << setw(2) << row << "  | ";
-            //cout << std::dec << setw(4) << (int)mod_pattern[i][j].period << "-";
             if(mod_pattern[i][j].note_number < 12)
                 cout << NOTE_STRING[mod_pattern[i][j].note_number] << (int)mod_pattern[i][j].oktave_number;
             else
                 cout << "...";
             cout << " ";
 
-            cout << std::hex << setfill('0') << setw(2) << (int)mod_pattern[i][j].sample_number << " ";
-            cout << std::hex << (int)mod_pattern[i][j].effectcommand << "-" << setfill('0') << setw(2) << (int)mod_pattern[i][j].effectdata <<  " | ";
+            if((int)mod_pattern[i][j].sample_number > 0)
+            {
+                cout << std::hex << setfill('0') << setw(2) << (int)mod_pattern[i][j].sample_number << " ";
+            }
+            else
+                cout << ".. ";
+
+            if(mod_pattern[i][j].effectcommand == 0x00 && mod_pattern[i][j].effectdata == 0x00)
+                cout << "... | ";
+            else
+                cout << std::hex << (int)mod_pattern[i][j].effectcommand << setfill('0') << setw(2) << (int)mod_pattern[i][j].effectdata <<  " | ";
             channel++;
             if (channel == mod_channel_count)
             {
@@ -371,7 +389,22 @@ void MODClass::NoteConvert(NOTE *note, bool direction)
 
 void MODClass::NextLine()
 {
-    if(akt_pattern_line == 0)
+    if(pattern_break)
+    {
+        pattern_break = false;
+
+        song_pos++;
+        if(song_pos == mod_song_length)
+            song_pos = 0;
+
+        int pattern_nr = mod_pattern_tbl[song_pos];
+        akt_pattern = mod_pattern[pattern_nr];
+
+        akt_pattern_line = pattern_break_line;
+
+        cout << endl << "Pattern Nr: " << pattern_nr << endl;
+    }
+    else if(akt_pattern_line == 0)
     {
         int pattern_nr = mod_pattern_tbl[song_pos];
         akt_pattern = mod_pattern[pattern_nr];
@@ -392,8 +425,17 @@ void MODClass::NextLine()
             cout << "...";
         cout << " ";
 
-        cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[i].sample_number << " ";
-        cout << std::hex << (int)akt_pattern[i].effectcommand << "-" << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
+        if((int)akt_pattern[i].sample_number > 0)
+        {
+            cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[i].sample_number << " ";
+        }
+        else
+            cout << ".. ";
+
+        if(akt_pattern[i].effectcommand == 0x00 && akt_pattern[i].effectdata == 0x00)
+            cout << "... | ";
+        else
+            cout << std::hex << (int)akt_pattern[i].effectcommand << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
         channel_nr++;
     }
     cout << endl;
@@ -416,19 +458,70 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     {
         channels[channel_nr].play = true;
 
-        //float play_samplerate = 7093789.2 / (note->period * 2);
-        //channels[channel_nr].frequency = channels[channel_nr].frequ_counter = 44100 / (int)play_samplerate;     // div 14 for samplerate 44100, 28 for 22050 ...
+        channels[channel_nr].period = note->period;
+        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = ((note->period) /84.0);
 
-        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = note->period / 56;
+        channels[channel_nr].sample_pos = 0;
+    }
+
+    if(note->sample_number > 0)
+    {
+        channels[channel_nr].volume = (mod_samples[note->sample_number-1].volume & 0x7f) / 64.0;   // Liniar Volume
 
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
         channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
         channels[channel_nr].sample_pos = 0;
+
+        channels[channel_nr].loop_start = mod_samples[note->sample_number-1].loop_start;
+        channels[channel_nr].loop_length = mod_samples[note->sample_number-1].loop_length;
+        if(channels[channel_nr].loop_length > 2) channels[channel_nr].loop_enable = true;
+        else channels[channel_nr].loop_enable = false;
     }
 
     // Effekte
+    unsigned char vol;
+    unsigned char slide_up;
+    unsigned char slide_down;
+
     switch(note->effectcommand)
     {
+    case 0x01:      // Slide up (Portamento Up)
+        channels[channel_nr].period -= note->effectdata * 3;
+        channels[channel_nr].frequency = ((channels[channel_nr].period) /84.0);
+        break;
+    case 0x02:      // Slide down (Portamento Down)
+        channels[channel_nr].period += note->effectdata * 3;
+        channels[channel_nr].frequency = ((channels[channel_nr].period) /84.0);
+        break;
+    case 0x0A:      // Volume Slide
+        slide_up = note->effectdata >> 4;
+        slide_down = note->effectdata & 0x0f;
+
+        if(slide_up > 0)
+        {
+            channels[channel_nr].volume_slide = 1;
+            channels[channel_nr].volume_slide_value = slide_up;
+        }
+        else if(slide_down > 0)
+        {
+            channels[channel_nr].volume_slide = 2;
+            channels[channel_nr].volume_slide_value = slide_down;
+        }
+        else{
+            channels[channel_nr].volume_slide = 0;
+            channels[channel_nr].volume_slide_value = 0;
+        }
+        break;
+    case 0x0C:
+        vol = note->effectdata;
+        if(vol > 64)
+            vol = 64;
+        channels[channel_nr].volume = vol / 64.0;
+        break;
+    case 0x0D:      // Pattern Break
+        pattern_break = true;
+        pattern_break_line = (note->effectdata >> 4) * 10 + (note->effectdata & 0x0f);
+        break;
     case 0x0F:      // SetSpeed
         if(note->effectdata < 32)
         thick_counter_start = note->effectdata;
@@ -440,32 +533,72 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 
 void MODClass::CalcNextSamples(signed short *samples)
 {
-    signed short mix_chn = 0;
+    //signed short mix_chn = 0;
+
+    samples[0] = 0;
+    samples[1] = 0;
+
     for(int i=0; i<mod_channel_count; i++)
     {
+        int cp = CHANNEL_PAN[i];
+        int cpi = CHANNEL_PAN_INV[i];
+
         if(channels[i].play)
         {
             signed char *sample_data = (signed char*)channels[i].sample_data;
-            //if(i==0)
-                mix_chn += sample_data[channels[i].sample_pos];
-
-            channels[i].frequ_counter--;
-            if(channels[i].frequ_counter == 0)
+            if(sample_data != NULL)
             {
-                channels[i].frequ_counter = channels[i].frequency;
-                channels[i].sample_pos++;
-                if(channels[i].sample_pos == channels[i].sample_length)
+                //if(i==0)
                 {
-                    channels[i].sample_pos = 0;
-                    channels[i].play = false;
+                    samples[cp] += sample_data[channels[i].sample_pos] * channels[i].volume;
+                    samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
+                }
+
+                channels[i].frequ_counter -= 1.0;
+                if(channels[i].frequ_counter < 0.0)
+                {
+                    channels[i].frequ_counter += channels[i].frequency;
+                    channels[i].sample_pos++;
+
+                    if(channels[i].loop_enable)
+                    {
+                        if(channels[i].sample_pos == (channels[i].loop_start + channels[i].loop_length))
+                        {
+                            channels[i].sample_pos = channels[i].loop_start;
+                        }
+                    }
+                    else
+                    {
+                        if(channels[i].sample_pos == channels[i].sample_length)
+                        {
+                            channels[i].sample_pos = 0;
+                            channels[i].play = false;
+                        }
+                    }
                 }
             }
         }
-        else
-            mix_chn += 0;
     }
 
-    samples[0] = samples[1] = mix_chn * 64;
+    samples[0] *= 64;
+    samples[1] *= 64;
+}
+
+void MODClass::CalcNextThick()
+{
+    for(int i=0; i<mod_channel_count; i++)
+    {
+        if(channels[i].volume_slide == 1)
+        {
+           channels[i].volume += (channels[i].volume_slide_value / 64.0f);
+           if(channels[i].volume > 1.0) channels[i].volume = 1.0;
+        }
+        else if(channels[i].volume_slide == 2)
+        {
+            channels[i].volume -= (channels[i].volume_slide_value / 64.0f);
+            if(channels[i].volume < 0.0) channels[i].volume = 0.0;
+        }
+    }
 }
 
 void MODClass::MODPlay()
@@ -475,6 +608,8 @@ void MODClass::MODPlay()
 
     song_pos = 0;
     akt_pattern_line = 0;
+
+    pattern_break = false;
 
     NextLine();
 
