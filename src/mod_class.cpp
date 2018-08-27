@@ -436,7 +436,7 @@ void MODClass::NextLine()
         if(akt_pattern[i].effectcommand == 0x00 && akt_pattern[i].effectdata == 0x00)
             cout << "... | ";
         else
-            cout << std::hex << (int)akt_pattern[i].effectcommand << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
+            cout << std::hex << "\033[1;31m" << (int)akt_pattern[i].effectcommand << "\033[0m" << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
         channel_nr++;
     }
     cout << endl;
