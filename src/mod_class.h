@@ -100,6 +100,8 @@ static const unsigned short PERIOD_TABLE[16][60] = {                        // t
     216 , 203 , 192 , 181 , 171 , 161 , 152 , 144 , 136 , 128 , 121 , 114,
     108 , 101 , 96  , 90  , 85  , 80  , 76  , 72  , 68  , 64  , 60  , 57 }};
 
+static const signed short VIBRATO_TABLE[32] = {0,24,49,74,97,120,141,161,180,197,212,224,235,244,250,253,255,253,250,244,235,224,212,197,180,161,141,120,97,74,49,24};
+
 #define MAX_PATTERN 128
 #define MAX_ROW 64
 
@@ -171,6 +173,10 @@ struct CHANNEL
     int     slide_up_value = 0;
     bool    slide_down = false;
     int     slide_down_value = 0;
+    bool    vibrato = false;
+    int     vibrato_speed = 0;
+    int     vibrato_depth = 0;
+    int     vibrato_pos = 0;
 };
 
 class MODClass

@@ -464,6 +464,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     // Volume Slide beenden -> gilt nur für eine Line
     channels[channel_nr].volume_slide = 0;
 
+    // Vibrato beenden -> gilt nur für eine Line
+    channels[channel_nr].vibrato = false;
+
     // Wenn Period == 0 dann keine Änderung der Periode
     if(note->period > 0)
     {
@@ -535,6 +538,16 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].slide_down_value = note->effectdata;
         break;
 
+    case 0x04:      // Vibrato
+        channels[channel_nr].vibrato = true;
+        //channels[channel_nr].vibrato_pos = 0;   // Nötig ??
+
+        if((note->effectdata >> 4) != 0)
+            channels[channel_nr].vibrato_speed = note->effectdata >> 4;
+        if((note->effectdata & 0x0f) != 0)
+            channels[channel_nr].vibrato_depth = note->effectdata & 0x0f;
+        break;
+
     case 0x0A:      // Volume Slide
         slide_up = note->effectdata >> 4;
         slide_down = note->effectdata & 0x0f;
@@ -576,8 +589,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
                 if(channels[channel_nr].volume < 0.0) channels[channel_nr].volume = 0.0;
                 break;
             case 0x0E:  // Delay
-                if((note->effectdata & 0x0f) > 0)
-                    thick_counter = thick_counter_start *  ((note->effectdata & 0x0f)-1);
+                if((note->effectdata & 0x0f) > 1)
+                    thick_counter = thick_counter_start * ((note->effectdata & 0x0f)-1);
+                else thick_counter = thick_counter_start;
                 break;
             }
         break;
@@ -605,7 +619,7 @@ void MODClass::CalcNextSamples(signed short *samples)
             signed char *sample_data = (signed char*)channels[i].sample_data;
             if(sample_data != NULL)
             {
-                //if(i==3)
+                //if(i==0)
                 {
                     samples[cp] += sample_data[channels[i].sample_pos] * channels[i].volume;
                     samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
@@ -646,18 +660,18 @@ void MODClass::CalcNextThick()
     for(int i=0; i<mod_channel_count; i++)
     {
         // Arpeggio
-        if(channels[i].arpeggio == true)
+        if(channels[i].arpeggio)
         {
             switch(channels[i].arpeggio_counter % 3)
             {
             case 0:
-                channels[i].frequency = channels[i].frequ_counter = channels[i].arpeggio_frequency0;
+                channels[i].frequency = channels[i].arpeggio_frequency0;
                 break;
             case 1:
-                channels[i].frequency = channels[i].frequ_counter = channels[i].arpeggio_frequency1;
+                channels[i].frequency = channels[i].arpeggio_frequency1;
                 break;
             case 2:
-                channels[i].frequency = channels[i].frequ_counter = channels[i].arpeggio_frequency2;
+                channels[i].frequency = channels[i].arpeggio_frequency2;
                 break;
             }
             channels[i].arpeggio_counter++;
@@ -669,7 +683,7 @@ void MODClass::CalcNextThick()
             if(thick_counter > 1)
             {
                 channels[i].period -= channels[i].slide_up_value;
-                channels[i].frequency = channels[i].frequ_counter = (channels[i].period / 81.0);
+                channels[i].frequency = (channels[i].period / 81.0);
             }
         }
 
@@ -679,7 +693,20 @@ void MODClass::CalcNextThick()
             if(thick_counter > 1)
             {
                 channels[i].period += channels[i].slide_down_value;
-                channels[i].frequency = channels[i].frequ_counter = (channels[i].period / 81.0);
+                channels[i].frequency = (channels[i].period / 81.0);
+            }
+        }
+
+        // Vibrato
+        if(channels[i].vibrato)
+        {
+            if(thick_counter > 1)
+            {
+                signed short vm = ((VIBRATO_TABLE[channels[i].vibrato_pos & 31] * channels[i].vibrato_depth) >> (7)); // Milky (7-2) -> hier dann größerer Effekt
+                if ((channels[i].vibrato_pos & 63) > 31) vm = -vm;
+
+                channels[i].vibrato_pos += channels[i].vibrato_speed;
+                channels[i].frequency = (channels[i].period + vm) / 81.0;
             }
         }
 
