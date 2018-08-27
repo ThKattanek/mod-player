@@ -47,12 +47,12 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
             {
                 time_counter = time_counter_start;
                 thick_counter--;
-                CalcNextThick();
                 if(thick_counter == 0)
                 {
                     thick_counter = thick_counter_start;
                     NextLine();
                 }
+                CalcNextThick();
             }
             CalcNextSamples(stream+i);
         }
@@ -371,6 +371,7 @@ void MODClass::NoteConvert(NOTE *note, bool direction)
                 i--;
                 if(i<60)
                 {
+                    note->note_postion_in_table = i;
                     note->note_number = i%12;
                     note->oktave_number = i/12 + 2;
                 }
@@ -453,13 +454,24 @@ void MODClass::NextLine()
 
 void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 {
+    // Arpeggio beenden -> gilt nur für eine Line
+    channels[channel_nr].arpeggio = false;
+
+    // Slide Up and Down beenden
+    channels[channel_nr].slide_up = false;
+    channels[channel_nr].slide_down = false;
+
+    // Volume Slide beenden -> gilt nur für eine Line
+    channels[channel_nr].volume_slide = 0;
+
     // Wenn Period == 0 dann keine Änderung der Periode
     if(note->period > 0)
     {
         channels[channel_nr].play = true;
 
+        channels[channel_nr].note_position_in_table = note->note_postion_in_table;
         channels[channel_nr].period = note->period;
-        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = ((note->period) /81.0);
+        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = (channels[channel_nr].period / 81.0);
 
         channels[channel_nr].sample_pos = 2;
     }
@@ -482,17 +494,47 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     unsigned char vol;
     unsigned char slide_up;
     unsigned char slide_down;
+    unsigned char xxx,yyy;
+    int arp_period1, arp_period2;
+
+    xxx = note->effectdata >> 4;
+    yyy = note->effectdata & 0x0f;
 
     switch(note->effectcommand)
     {
+    case 0x00:      // Arpeggio
+        if(note->effectdata > 0)
+        {
+            channels[channel_nr].arpeggio = true;
+            channels[channel_nr].arpeggio_counter = 0;
+            channels[channel_nr].arpeggio_frequency0 = (channels[channel_nr].period / 81.0);
+
+            if((channels[channel_nr].note_position_in_table + xxx) < 60)
+            {
+                arp_period1 = PERIOD_TABLE[0][channels[channel_nr].note_position_in_table + xxx];
+                channels[channel_nr].arpeggio_frequency1 = (arp_period1 / 81.0);
+            }
+            else channels[channel_nr].arpeggio_frequency1 = channels[channel_nr].arpeggio_frequency0;
+
+            if((channels[channel_nr].note_position_in_table + yyy) < 60)
+            {
+                arp_period2 = PERIOD_TABLE[0][channels[channel_nr].note_position_in_table + yyy];
+                channels[channel_nr].arpeggio_frequency2 = (arp_period2 / 81.0);
+            }
+            else channels[channel_nr].arpeggio_frequency2 = channels[channel_nr].arpeggio_frequency0;
+        }
+        break;
+
     case 0x01:      // Slide up (Portamento Up)
-        channels[channel_nr].period -= note->effectdata * 3;
-        channels[channel_nr].frequency = ((channels[channel_nr].period) /81.0);
+        channels[channel_nr].slide_up = true;
+        channels[channel_nr].slide_up_value = note->effectdata;
         break;
+
     case 0x02:      // Slide down (Portamento Down)
-        channels[channel_nr].period += note->effectdata * 3;
-        channels[channel_nr].frequency = ((channels[channel_nr].period) /81.0);
+        channels[channel_nr].slide_down = true;
+        channels[channel_nr].slide_down_value = note->effectdata;
         break;
+
     case 0x0A:      // Volume Slide
         slide_up = note->effectdata >> 4;
         slide_down = note->effectdata & 0x0f;
@@ -550,8 +592,6 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 
 void MODClass::CalcNextSamples(signed short *samples)
 {
-    //signed short mix_chn = 0;
-
     samples[0] = 0;
     samples[1] = 0;
 
@@ -565,7 +605,7 @@ void MODClass::CalcNextSamples(signed short *samples)
             signed char *sample_data = (signed char*)channels[i].sample_data;
             if(sample_data != NULL)
             {
-                //if(i==0)
+                //if(i==3)
                 {
                     samples[cp] += sample_data[channels[i].sample_pos] * channels[i].volume;
                     samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
@@ -605,6 +645,45 @@ void MODClass::CalcNextThick()
 {
     for(int i=0; i<mod_channel_count; i++)
     {
+        // Arpeggio
+        if(channels[i].arpeggio == true)
+        {
+            switch(channels[i].arpeggio_counter % 3)
+            {
+            case 0:
+                channels[i].frequency = channels[i].frequ_counter = channels[i].arpeggio_frequency0;
+                break;
+            case 1:
+                channels[i].frequency = channels[i].frequ_counter = channels[i].arpeggio_frequency1;
+                break;
+            case 2:
+                channels[i].frequency = channels[i].frequ_counter = channels[i].arpeggio_frequency2;
+                break;
+            }
+            channels[i].arpeggio_counter++;
+        }
+
+        // Slide Up
+        if(channels[i].slide_up)
+        {
+            if(thick_counter > 1)
+            {
+                channels[i].period -= channels[i].slide_up_value;
+                channels[i].frequency = channels[i].frequ_counter = (channels[i].period / 81.0);
+            }
+        }
+
+        // Slide Down
+        if(channels[i].slide_down)
+        {
+            if(thick_counter > 1)
+            {
+                channels[i].period += channels[i].slide_down_value;
+                channels[i].frequency = channels[i].frequ_counter = (channels[i].period / 81.0);
+            }
+        }
+
+        // Volume Silde Up and Down
         if(channels[i].volume_slide == 1)
         {
            channels[i].volume += (channels[i].volume_slide_value / 64.0f);

@@ -141,8 +141,9 @@ struct NOTE
     unsigned char   effectdata;     //  8-bit
 
     // Ermittelt aus period
-    unsigned char   note_number;    // 0-11 C,C#,D
-    unsigned char   oktave_number;  // 1-5
+    int             note_postion_in_table;  // 0-59 0=octave2, 12=octave3, 24=octave4, 36=octave5, 48=octave6
+    unsigned char   note_number;            // 0-11 C,C#,D
+    unsigned char   oktave_number;          // 1-5
 };
 
 struct CHANNEL
@@ -151,6 +152,7 @@ struct CHANNEL
     float   volume = 1.0f;
     int     volume_slide = 0;   // 0=stop, 1=up, 2=down
     int     volume_slide_value = 0;
+    int     note_position_in_table = 0;
     int     period = 0;
     float   frequency = 0.0;
     float   frequ_counter = 0.0;
@@ -160,6 +162,15 @@ struct CHANNEL
     void*   sample_data = NULL;
     int     sample_length = 0;
     int     sample_pos = 2;
+    bool    arpeggio = false;
+    int     arpeggio_counter = 0;
+    float   arpeggio_frequency0 = 0.0;
+    float   arpeggio_frequency1 = 0.0;
+    float   arpeggio_frequency2 = 0.0;
+    bool    slide_up = false;
+    int     slide_up_value = 0;
+    bool    slide_down = false;
+    int     slide_down_value = 0;
 };
 
 class MODClass
