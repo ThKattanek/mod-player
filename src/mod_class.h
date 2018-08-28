@@ -156,7 +156,7 @@ struct CHANNEL
     int     volume_slide_value = 0;
     int     note_position_in_table = 0;
     int     period = 0;
-    float   frequency = 0.0;
+    float   frequ_counter_start = 0.0;
     float   frequ_counter = 0.0;
     bool    loop_enable = false;
     int     loop_start = 0;
@@ -164,6 +164,7 @@ struct CHANNEL
     void*   sample_data = NULL;
     int     sample_length = 0;
     int     sample_pos = 2;
+    int     sample_finetune = 0;
     bool    arpeggio = false;
     int     arpeggio_counter = 0;
     float   arpeggio_frequency0 = 0.0;
@@ -232,7 +233,7 @@ private:
 
     void NextLine(void);
     void CalcChannelData(int channel_nr, NOTE* note);
-
+    float CalcFrequCounterStart(int period);
     void CalcNextSamples(signed short *samples);
     void CalcNextThick();
 

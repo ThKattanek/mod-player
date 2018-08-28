@@ -490,30 +490,32 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     // Vibrato beenden -> gilt nur für eine Line
     channels[channel_nr].vibrato = false;
 
-    // Wenn Period == 0 dann keine Änderung der Periode
-    if(note->period > 0)
-    {
-        channels[channel_nr].play = true;
-
-        channels[channel_nr].note_position_in_table = note->note_postion_in_table;
-        channels[channel_nr].period = note->period;
-        channels[channel_nr].frequency = channels[channel_nr].frequ_counter = (channels[channel_nr].period / 81.0);
-
-        channels[channel_nr].sample_pos = 2;
-    }
-
     if(note->sample_number > 0)
     {
         channels[channel_nr].volume = (mod_samples[note->sample_number-1].volume & 0x7f) / 64.0;   // Liniar Volume
 
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
         channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
+        channels[channel_nr].sample_finetune = mod_samples[note->sample_number-1].finetune;
         channels[channel_nr].sample_pos = 2;
 
         channels[channel_nr].loop_start = mod_samples[note->sample_number-1].loop_start;
         channels[channel_nr].loop_length = mod_samples[note->sample_number-1].loop_length;
         if(channels[channel_nr].loop_length > 2) channels[channel_nr].loop_enable = true;
         else channels[channel_nr].loop_enable = false;
+    }
+
+    // Wenn Period == 0 dann keine Änderung der Periode
+    if(note->period > 0)
+    {
+        channels[channel_nr].play = true;
+
+        channels[channel_nr].note_position_in_table = note->note_postion_in_table;
+
+        channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
+        channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
+
+        channels[channel_nr].sample_pos = 2;
     }
 
     // Effekte
@@ -533,19 +535,19 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         {
             channels[channel_nr].arpeggio = true;
             channels[channel_nr].arpeggio_counter = 0;
-            channels[channel_nr].arpeggio_frequency0 = (channels[channel_nr].period / 81.0);
+            channels[channel_nr].arpeggio_frequency0 = CalcFrequCounterStart(channels[channel_nr].period);
 
             if((channels[channel_nr].note_position_in_table + xxx) < 60)
             {
                 arp_period1 = PERIOD_TABLE[0][channels[channel_nr].note_position_in_table + xxx];
-                channels[channel_nr].arpeggio_frequency1 = (arp_period1 / 81.0);
+                channels[channel_nr].arpeggio_frequency1 = CalcFrequCounterStart(arp_period1);
             }
             else channels[channel_nr].arpeggio_frequency1 = channels[channel_nr].arpeggio_frequency0;
 
             if((channels[channel_nr].note_position_in_table + yyy) < 60)
             {
                 arp_period2 = PERIOD_TABLE[0][channels[channel_nr].note_position_in_table + yyy];
-                channels[channel_nr].arpeggio_frequency2 = (arp_period2 / 81.0);
+                channels[channel_nr].arpeggio_frequency2 = CalcFrequCounterStart(arp_period2);
             }
             else channels[channel_nr].arpeggio_frequency2 = channels[channel_nr].arpeggio_frequency0;
         }
@@ -649,6 +651,11 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     }
 }
 
+float MODClass::CalcFrequCounterStart(int period)
+{
+    return period / 81.0f;
+}
+
 void MODClass::CalcNextSamples(signed short *samples)
 {
     samples[0] = 0;
@@ -673,7 +680,7 @@ void MODClass::CalcNextSamples(signed short *samples)
                 channels[i].frequ_counter -= 1.0;
                 if(channels[i].frequ_counter < 0.0)
                 {
-                    channels[i].frequ_counter += channels[i].frequency;
+                    channels[i].frequ_counter += channels[i].frequ_counter_start;
                     channels[i].sample_pos++;
 
                     if(channels[i].loop_enable)
@@ -711,13 +718,13 @@ void MODClass::CalcNextThick()
             switch(channels[i].arpeggio_counter % 3)
             {
             case 0:
-                channels[i].frequency = channels[i].arpeggio_frequency0;
+                channels[i].frequ_counter_start = channels[i].arpeggio_frequency0;
                 break;
             case 1:
-                channels[i].frequency = channels[i].arpeggio_frequency1;
+                channels[i].frequ_counter_start = channels[i].arpeggio_frequency1;
                 break;
             case 2:
-                channels[i].frequency = channels[i].arpeggio_frequency2;
+                channels[i].frequ_counter_start = channels[i].arpeggio_frequency2;
                 break;
             }
             channels[i].arpeggio_counter++;
@@ -729,7 +736,7 @@ void MODClass::CalcNextThick()
             if(thick_counter > 1)
             {
                 channels[i].period -= channels[i].slide_up_value;
-                channels[i].frequency = (channels[i].period / 81.0);
+                channels[i].frequ_counter_start = (channels[i].period / 81.0);
             }
         }
 
@@ -739,7 +746,7 @@ void MODClass::CalcNextThick()
             if(thick_counter > 1)
             {
                 channels[i].period += channels[i].slide_down_value;
-                channels[i].frequency = (channels[i].period / 81.0);
+                channels[i].frequ_counter_start = (channels[i].period / 81.0);
             }
         }
 
@@ -752,7 +759,7 @@ void MODClass::CalcNextThick()
                 if ((channels[i].vibrato_pos & 63) > 31) vm = -vm;
 
                 channels[i].vibrato_pos += channels[i].vibrato_speed;
-                channels[i].frequency = (channels[i].period + vm) / 81.0;
+                channels[i].frequ_counter_start = (channels[i].period + vm) / 81.0;
             }
         }
 
