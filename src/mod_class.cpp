@@ -696,11 +696,9 @@ void MODClass::CalcNextSamples(signed short *samples)
         }
     }
 
-    //samples[0] *= 64;
-    //samples[1] *= 64;
-
-    samples[0] *= (512 / mod_channel_count);
-    samples[1] *= (512 / mod_channel_count);
+    // simply mix only 8bit
+    samples[0] *= (256 / mod_channel_count);
+    samples[1] *= (256 / mod_channel_count);
 }
 
 void MODClass::CalcNextThick()
