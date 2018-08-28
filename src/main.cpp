@@ -36,6 +36,10 @@ int main(int argc, char *argv[])
         filename = argv[1];
 
     mod = new MODClass(filename, AudioSampleRate);
+
+    if(!mod->ModIsLoaded())
+        return(0);
+
     SAMPLE* sample = mod->GetSample(SAMPLE_NR);
 
     sample_data = (char*)sample->data;

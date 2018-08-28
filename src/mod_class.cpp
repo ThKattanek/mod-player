@@ -29,6 +29,11 @@ MODClass::~MODClass()
     }
 }
 
+bool MODClass::ModIsLoaded()
+{
+    return mod_is_loaded;
+}
+
 SAMPLE *MODClass::GetSample(unsigned char sample_number)
 {
     if(sample_number < mod_sample_count)
@@ -146,7 +151,19 @@ bool MODClass::MODRead(const char *filename)
         mod_type_id = _OCTA;
     else
     {
-        mod_type_id = _NST; // The old NST format with 15 Samples and not ID-Tag
+        if(!strcmp((const char*)mod_type+2, "CH"))
+        {
+            mod_type_id = _CH;
+
+            char mod_id_str[5];
+            strcpy(mod_id_str, (const char*)mod_type);
+            mod_id_str[2] = 0;
+            mod_channel_count = strtol(mod_id_str, NULL, 10);
+        }
+        else
+        {
+            mod_type_id = _NST; // The old NST format with 15 Samples and not ID-Tag
+        }
     }
 
     cout << "Modtype: " << mod_type << endl;
@@ -257,6 +274,9 @@ bool MODClass::MODRead(const char *filename)
         break;
     case _8CHN: case _8FLT: case _OCTA:
         mod_channel_count = 8;
+        break;
+    case _CH:
+        // CHANNEL COUNT IS SETTING
         break;
     default:
         mod_channel_count = 0;
@@ -676,8 +696,11 @@ void MODClass::CalcNextSamples(signed short *samples)
         }
     }
 
-    samples[0] *= 64;
-    samples[1] *= 64;
+    //samples[0] *= 64;
+    //samples[1] *= 64;
+
+    samples[0] *= (512 / mod_channel_count);
+    samples[1] *= (512 / mod_channel_count);
 }
 
 void MODClass::CalcNextThick()

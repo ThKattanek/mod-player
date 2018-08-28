@@ -8,11 +8,11 @@
 
 using namespace std;
 
-enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _NST};
+enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _CH, _NST};
 
 static const char FINETUNETBL[] = {0, 1, 2, 3, 4, 5, 6, 7, -8, -7, -6, -5, -4, -3, -2, -1};
-static const int  CHANNEL_PAN[8] = {0,1,1,0,0,1,1,0};   // 0=links, 1=rechts
-static const int  CHANNEL_PAN_INV[8] = {1,0,0,1,1,0,0,1};   // 0=links, 1=rechts
+static const int  CHANNEL_PAN[32] = {0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0};   // 0=links, 1=rechts
+static const int  CHANNEL_PAN_INV[32] = {1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1};   // 0=links, 1=rechts
 
 // C-C#-D-D#-E-F-F#-G-G#-A-A#-H
 
@@ -187,11 +187,10 @@ public:
     ~MODClass();
 
     ///
-    /// \brief GetSample
-    /// \param sample_number - number of sample in the modfile
-    /// \return a pointer of a SAMPLE object
+    /// \brief ModIsLoaded
+    /// \return true - Modfile is correct loaded, false - Modfile is not loaded
     ///
-    SAMPLE* GetSample(unsigned char sample_number);
+    bool ModIsLoaded(void);
 
     ///
     /// \brief FillAudioBuffer - Fill the AudioStream (16Bit/Stereo) with audio data
@@ -199,6 +198,13 @@ public:
     /// \param length
     ///
     void FillAudioBuffer(signed short* stream, int length);
+
+    ///
+    /// \brief GetSample
+    /// \param sample_number - number of sample in the modfile
+    /// \return a pointer of a SAMPLE object
+    ///
+    SAMPLE* GetSample(unsigned char sample_number);
 
     ///
     /// \brief PlaySample - Play a single sample
