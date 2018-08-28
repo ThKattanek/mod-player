@@ -8,7 +8,7 @@
 
 using namespace std;
 
-enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _UNKNOWN};
+enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _NST};
 
 static const char FINETUNETBL[] = {0, 1, 2, 3, 4, 5, 6, 7, -8, -7, -6, -5, -4, -3, -2, -1};
 static const int  CHANNEL_PAN[8] = {0,1,1,0,0,1,1,0};   // 0=links, 1=rechts
@@ -215,7 +215,7 @@ private:
     /// \brief MODRead - reading a modfile
     /// \param filename - filename to the modfile
     ///
-    void MODRead(const char *filename);
+    bool MODRead(const char *filename);
 
     ///
     /// \brief NoteConvert - convert the note from period to note and octave or note an octave to note

@@ -99,16 +99,17 @@ void MODClass::PlaySample(unsigned char sample_nr)
     }
 }
 
-void MODClass::MODRead(const char *filename)
+bool MODClass::MODRead(const char *filename)
 {
     MODStop();
+
+    mod_is_loaded = false;
 
     file.open(filename, ios::in | ios::binary);
     if(!file.is_open())
     {
         cerr << "Modfile \"" << filename << "\" canno't open." << endl;
-        mod_is_loaded = false;
-        return;
+        return false;
     }
 
     // MOD Name
@@ -145,15 +146,13 @@ void MODClass::MODRead(const char *filename)
         mod_type_id = _OCTA;
     else
     {
-        mod_type_id = _UNKNOWN;
-        mod_is_loaded = false;
-        file.close();
-        return;
+        mod_type_id = _NST; // The old NST format with 15 Samples and not ID-Tag
     }
+
     cout << "Modtype: " << mod_type << endl;
 
     // SAMPLES
-    if(mod_type_id == _UNKNOWN)
+    if(mod_type_id == _NST)
         mod_sample_count = 15;
     else mod_sample_count = 31;
 
@@ -250,7 +249,7 @@ void MODClass::MODRead(const char *filename)
     // Channel Count
     switch(mod_type_id)
     {
-    case _MK: case _4CHN: case _4FLT: case _UNKNOWN:
+    case _MK: case _4CHN: case _4FLT: case _NST:
         mod_channel_count = 4;
         break;
     case _6CHN:
@@ -269,7 +268,6 @@ void MODClass::MODRead(const char *filename)
     else
         channels = new CHANNEL[mod_channel_count];
 
-
     for(int i=0; i< mod_channel_count; i++)
     {
         channels[i].sample_data = NULL;
@@ -280,7 +278,10 @@ void MODClass::MODRead(const char *filename)
 
 
     // Read Pattern Data
-    file.seekg(1084, ios::beg);
+    if(mod_type_id == _NST)
+        file.seekg(600, ios::beg);
+    else
+        file.seekg(1084, ios::beg);
 
     mod_pattern_size = MAX_ROW * mod_channel_count;
 
@@ -354,6 +355,8 @@ void MODClass::MODRead(const char *filename)
     }
 
     file.close();
+    mod_is_loaded = true;
+    return true;
 }
 
 void MODClass::NoteConvert(NOTE *note, bool direction)
