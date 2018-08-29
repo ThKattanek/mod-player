@@ -8,7 +8,7 @@ MODClass::MODClass(const char *filename, int samplerate)
     this->time_counter = time_counter_start;
 
     sample_play_enable = false;
-    channel_pan = 0.5;
+    channel_pan = 0.3;
     channels = NULL;
 
     for(int i=0; i<MAX_PATTERN;i++)
@@ -197,7 +197,7 @@ bool MODClass::MODRead(const char *filename)
         // Finetune
         unsigned char finetune;
         file.read((char*)&finetune,1);
-        mod_samples[i].finetune = FINETUNETBL[finetune];
+        mod_samples[i].finetune = finetune & 0x0f;
 
         cout << "\tFinetune: " << (int)mod_samples[i].finetune << endl;
 
@@ -499,6 +499,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].sample_finetune = mod_samples[note->sample_number-1].finetune;
         channels[channel_nr].sample_pos = 2;
 
+        channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
+        channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
+
         channels[channel_nr].loop_start = mod_samples[note->sample_number-1].loop_start;
         channels[channel_nr].loop_length = mod_samples[note->sample_number-1].loop_length;
         if(channels[channel_nr].loop_length > 2) channels[channel_nr].loop_enable = true;
@@ -779,7 +782,7 @@ void MODClass::CalcNextThick()
 
 void MODClass::MODPlay()
 {
-    thick_counter_start = 6;
+    thick_counter_start = 5;
     thick_counter = thick_counter_start;
 
     song_pos = 0;
