@@ -199,19 +199,6 @@ public:
     ///
     void FillAudioBuffer(signed short* stream, int length);
 
-    ///
-    /// \brief GetSample
-    /// \param sample_number - number of sample in the modfile
-    /// \return a pointer of a SAMPLE object
-    ///
-    SAMPLE* GetSample(unsigned char sample_number);
-
-    ///
-    /// \brief PlaySample - Play a single sample
-    /// \param sample_nr - number of playing sample (1-31)
-    ///
-    void PlaySample(unsigned char sample_nr);
-
     void MODPlay(void);
     void MODStop(void);
     void MODPause(void);
@@ -273,11 +260,6 @@ private:
                                 // 1.0 = left and right channel is equal
     bool    pattern_break;
     int     pattern_break_line;
-
-    // Single Sample Play
-    bool sample_play_enable;
-    int sample_play_nr;
-    int sample_play_pos;
 };
 
 #endif // MODCLASS_H

@@ -16,15 +16,6 @@ using namespace std;
 
 void AudioMix(void* userdat, Uint8 *stream, int length);
 
-#define SAMPLE_NR 12
-char* sample_data;
-int sample_len;
-int sample_pos;
-
-bool sample_loop;
-int sample_loop_start;
-int sample_loop_end;
-
 MODClass* mod = NULL;
 
 #undef main
@@ -39,19 +30,6 @@ int main(int argc, char *argv[])
 
     if(!mod->ModIsLoaded())
         return(0);
-
-    SAMPLE* sample = mod->GetSample(SAMPLE_NR);
-
-    sample_data = (char*)sample->data;
-    sample_len = sample->length;
-    sample_pos = 0;
-
-    if(sample->loop_length < 3)
-        sample_loop = false;
-    else sample_loop = true;
-
-    sample_loop_start = sample->loop_start;
-    sample_loop_end = sample->loop_start + sample->loop_length;
 
     cout << "Demo-01" << endl;
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
@@ -117,59 +95,12 @@ int main(int argc, char *argv[])
                     N--;
                     break;
 
-                case SDLK_0:
-                    numeric_input_buffer[numeric_input_count] = 0;
-                    numeric_input_count++;
-                    break;
-                case SDLK_1:
-                    numeric_input_buffer[numeric_input_count] = 1;
-                    numeric_input_count++;
-                    break;
-                case SDLK_2:
-                    numeric_input_buffer[numeric_input_count] = 2;
-                    numeric_input_count++;
-                    break;
-                case SDLK_3:
-                    numeric_input_buffer[numeric_input_count] = 3;
-                    numeric_input_count++;
-                    break;
-                case SDLK_4:
-                    numeric_input_buffer[numeric_input_count] = 4;
-                    numeric_input_count++;
-                    break;
-                case SDLK_5:
-                    numeric_input_buffer[numeric_input_count] = 5;
-                    numeric_input_count++;
-                    break;
-                case SDLK_6:
-                    numeric_input_buffer[numeric_input_count] = 6;
-                    numeric_input_count++;
-                    break;
-                case SDLK_7:
-                    numeric_input_buffer[numeric_input_count] = 7;
-                    numeric_input_count++;
-                    break;
-                case SDLK_8:
-                    numeric_input_buffer[numeric_input_count] = 8;
-                    numeric_input_count++;
-                    break;
-                case SDLK_9:
-                    numeric_input_buffer[numeric_input_count] = 9;
-                    numeric_input_count++;
-                    break;
                 case SDLK_ESCAPE:
                     numeric_input_count = 0;
                     break;
 
                 default:
                     break;
-                }
-                if(numeric_input_count==2)
-                {
-                    play_sample_number = numeric_input_buffer[0]*10;
-                    play_sample_number += numeric_input_buffer[1];
-                    numeric_input_count=0;
-                    mod->PlaySample(play_sample_number);
                 }
             }
             if (event.type == SDL_MOUSEBUTTONDOWN){
@@ -179,31 +110,10 @@ int main(int argc, char *argv[])
 
         SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
 
-
         SDL_RenderClear(ren);
 
         SDL_SetRenderDrawColor(ren,0,0,0,0);
 
-        int px1=0;
-        int py1=0+300;
-
-        signed char* data = (signed char*)sample->data;
-        float xmul = sample->length / 800.0;
-        float xpos_data = 0.0;
-
-        for(int i=0; i<sample->length; i++)
-        {
-            int px2 = i;
-            int py2 = data[(int)xpos_data]*-1+300;
-            xpos_data += xmul;
-
-            SDL_RenderDrawLine(ren,px1,py1,px2,py2);
-
-            px1 = px2;
-            py1 = py2;
-        }
-
-        /*
         float px1=r*cos(0)+x;
         float py1=r*sin(0)+y;
 
@@ -221,7 +131,6 @@ int main(int argc, char *argv[])
         N++;
         if(N==400)
             N=0;
-        */
 
         SDL_RenderPresent(ren);
         SDL_Delay(1);
