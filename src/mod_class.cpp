@@ -54,6 +54,11 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
             CalcNextSamples(stream+i);
         }
     }
+    else
+    {
+        for(int i=0; i<length; i+=2)
+           stream[i] = stream[i+1] = 0;
+    }
 }
 
 bool MODClass::MODRead(const char *filename)
