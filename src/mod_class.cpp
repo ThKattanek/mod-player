@@ -370,6 +370,16 @@ void MODClass::NoteConvert(NOTE *note, bool direction)
 
 void MODClass::NextLine()
 {
+    if(position_jump)
+    {
+        position_jump = false;
+        if(position_jump_pos == mod_song_length)
+            song_pos = 0;
+        else
+            song_pos = position_jump_pos;
+        akt_pattern_line = 0;
+    }
+
     if(pattern_break)
     {
         pattern_break = false;
@@ -574,16 +584,27 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             channels[channel_nr].volume_slide_value = 0;
         }
         break;
-    case 0x0C:
+
+    case 0x0B:      // Position Jump
+        position_jump_pos = note->effectdata;
+        if(position_jump_pos <= 127)
+        {
+            position_jump = true;
+        }
+        break;
+
+    case 0x0C:      // Set Volume
         vol = note->effectdata;
         if(vol > 64)
             vol = 64;
         channels[channel_nr].volume = vol / 64.0;
         break;
+
     case 0x0D:      // Pattern Break
         pattern_break = true;
         pattern_break_line = (note->effectdata >> 4) * 10 + (note->effectdata & 0x0f);
         break;
+
     case 0x0E:      // Extended Effects
             switch(note->effectdata >> 4)
             {
@@ -602,10 +623,12 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
                 break;
             }
         break;
+
     case 0x0F:      // SetSpeed
         if(note->effectdata < 32)
         thick_counter_start = note->effectdata;
         break;
+
     default:
         break;
     }

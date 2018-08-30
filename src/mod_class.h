@@ -260,6 +260,9 @@ private:
                                 // 1.0 = left and right channel is equal
     bool    pattern_break;
     int     pattern_break_line;
+
+    bool    position_jump;
+    int     position_jump_pos;
 };
 
 #endif // MODCLASS_H
