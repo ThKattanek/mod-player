@@ -4,6 +4,7 @@
 
 ## Used libraries
 * SDL2
+* SDL2_ttf
 
 ## Build
 ```bash
