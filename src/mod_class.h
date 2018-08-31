@@ -263,6 +263,9 @@ private:
 
     bool    position_jump;
     int     position_jump_pos;
+
+    bool    set_song_speed;
+    int     set_song_speed_var;
 };
 
 #endif // MODCLASS_H

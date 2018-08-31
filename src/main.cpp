@@ -1,6 +1,7 @@
 #include <iostream>
 #include <math.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "./mod_class.h"
 
@@ -36,6 +37,13 @@ int main(int argc, char *argv[])
 
     SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+    if (TTF_Init() < 0)
+    {
+        cerr << "Error: TTF not initialize." << endl;
+        return(0);
+    }
+
 
     /// SLD Audio Installieren (C64 Emulation) ///
     SDL_AudioSpec want,have;
@@ -146,36 +154,5 @@ void AudioMix(void* userdat, Uint8 *stream, int length)
     if(mod != NULL)
         mod->FillAudioBuffer((signed short*)stream, length/2);
     else
-    {
-        for(int i=0; i<length; i++)
-            stream[i] = 0;
-    }
-    /*
-    signed short* data = (signed short*)stream;
-    if(sample_data != NULL)
-    {
-        for(int i=0; i<length/2; i+=2)
-        {
-            data[i] = sample_data[sample_pos]*32;
-            data[i+1] = sample_data[sample_pos]*32;
-
-            sample_pos++;
-            if(sample_loop)
-            {
-                if(sample_pos == sample_loop_end)
-                    sample_pos = sample_loop_start;
-            }
-
-            if(sample_pos == sample_len) sample_pos = 0;
-        }
-    }
-    else
-    {
-        for(int i=0; i<length/2; i+=2)
-        {
-            data[i] = 0;
-            data[i+1] = 0;
-        }
-    }
-    */
+        for(int i=0; i<length; i++) stream[i] = 0;
 }

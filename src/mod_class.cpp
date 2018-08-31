@@ -370,6 +370,12 @@ void MODClass::NoteConvert(NOTE *note, bool direction)
 
 void MODClass::NextLine()
 {
+    if(set_song_speed)
+    {
+        set_song_speed = false;
+        thick_counter_start = set_song_speed_var;
+    }
+
     if(position_jump)
     {
         position_jump = false;
@@ -625,8 +631,18 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         break;
 
     case 0x0F:      // SetSpeed
+
+        /*
         if(note->effectdata < 32)
-        thick_counter_start = note->effectdata;
+            thick_counter_start = note->effectdata;
+        */
+
+        if(note->effectdata < 32)
+        {
+            set_song_speed = true;
+            set_song_speed_var = note->effectdata;
+        }
+
         break;
 
     default:
@@ -762,7 +778,7 @@ void MODClass::CalcNextThick()
 
 void MODClass::MODPlay()
 {
-    thick_counter_start = 5;
+    thick_counter_start = 6;
     thick_counter = thick_counter_start;
 
     song_pos = 0;

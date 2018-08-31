@@ -138,6 +138,14 @@ else()
     message(FATAL_ERROR "SDL2 wurde nicht gefunden!")
 endif()
 
+# SDL2 TTF
+find_package(SDL2_ttf REQUIRED)
+if(SDL2_TTF_FOUND)
+    include_directories(${SDL2_TTF_INCLUDE_DIR})
+else()
+    message(FATAL_ERROR "SDL2 TTF wurde nicht gefunden!")
+endif()
+
 # SDL2 Image
 #find_package(SDL2_image REQUIRED)
 #if(SDL2_IMAGE_FOUND)
@@ -163,11 +171,24 @@ else()
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY})
+target_link_libraries(${PROJECT_NAME} ${SDL2_TTF_LIBRARY})
 #target_link_libraries(${PROJECT_NAME} ${SDL2_IMAGE_LIBRARY})
 #target_link_libraries(${PROJECT_NAME} ${SDL2_MIXER_LIBRARY})
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} ${WIN32_LIBS})
+    if(CMAKE_CROSSCOMPILING)
+        message(STATUS "Windows Crosscompiling ...")
+        # SDL2 TTF
+        execute_process(
+          COMMAND ${PKG_CONFIG_EXECUTABLE} SDL2_ttf --libs
+          OUTPUT_VARIABLE SDL2_TTF_LIBS
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        set(WIN_LIBRARIES ${WIN_LIBRARIES} ${SDL2_TTF_LIBS})
+        endif()
+
+    target_link_libraries(${PROJECT_NAME} ${WIN32_LIBS} ${WIN_LIBRARIES})
 endif()
     
 ################### INSTALL #######################
