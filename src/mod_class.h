@@ -203,6 +203,11 @@ public:
     void MODStop(void);
     void MODPause(void);
 
+    void GetPatternAsString(int pattern_nr, char** pattern);
+
+    bool ChangePattern;
+    int  ChangePatternNr;
+
 private:
     ///
     /// \brief MODRead - reading a modfile

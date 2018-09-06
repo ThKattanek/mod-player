@@ -7,6 +7,9 @@ MODClass::MODClass(const char *filename, int samplerate)
     this->time_counter_start = samplerate / FPS;
     this->time_counter = time_counter_start;
 
+    ChangePattern = false;
+    ChangePatternNr = 0;
+
     channel_pan = 0.3;
     channels = NULL;
 
@@ -325,7 +328,7 @@ bool MODClass::MODRead(const char *filename)
         if(mod_samples[i].length > 0)
         {
             if(mod_samples[i].data != NULL)
-                delete[] mod_samples[i].data;
+                delete[] (char*)mod_samples[i].data;
             mod_samples[i].data = new char[mod_samples[i].length];
             file.read((char*)mod_samples[i].data,mod_samples[i].length);
         }
@@ -399,48 +402,65 @@ void MODClass::NextLine()
 
         akt_pattern_line = pattern_break_line;
 
-        cout << endl << "Pattern Nr: " << pattern_nr << endl;
+        //cout << endl << "Pattern Nr: " << pattern_nr << endl;
+
+        ChangePatternNr = pattern_nr;
+        ChangePattern = true;
     }
     else if(akt_pattern_line == 0)
     {
         int pattern_nr = mod_pattern_tbl[song_pos];
         akt_pattern = mod_pattern[pattern_nr];
 
-        cout << "Pattern Nr: " << pattern_nr << endl;
+        //cout << "Pattern Nr: " << pattern_nr << endl;
+
+        ChangePatternNr = pattern_nr;
+        ChangePattern = true;
     }
 
-    cout << std::hex << setfill('0') << setw(2) << akt_pattern_line << "  | ";
+    //cout << std::hex << setfill('0') << setw(2) << akt_pattern_line << "  | ";
     int pattern_line_adr = mod_channel_count * akt_pattern_line;
 
     int channel_nr = 0;
     for(int i=pattern_line_adr; i<pattern_line_adr + mod_channel_count; i++)
     {
         CalcChannelData(channel_nr, &akt_pattern[i]);
+
+        /// NOTE and Octave output
+        /*
         if(akt_pattern[i].note_number < 12)
             cout << NOTE_STRING[akt_pattern[i].note_number] << (int)akt_pattern[i].oktave_number;
         else
             cout << "...";
         cout << " ";
+        */
 
+        /// Samplenumber output
+        /*
         if((int)akt_pattern[i].sample_number > 0)
         {
             cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[i].sample_number << " ";
         }
         else
             cout << ".. ";
+        */
 
+        /// Effectnumber and Effectdata output
+        /*
         if(akt_pattern[i].effectcommand == 0x00 && akt_pattern[i].effectdata == 0x00)
             cout << "... | ";
         else
             cout << std::hex << "\033[1;31m" << (int)akt_pattern[i].effectcommand << "\033[0m" << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
+        */
+
         channel_nr++;
     }
-    cout << endl;
+    //cout << endl;
 
     akt_pattern_line++;
     if(akt_pattern_line == 64)
     {
-        cout << endl;
+        //cout << endl;
         akt_pattern_line = 0;
         song_pos++;
         if(song_pos == mod_song_length)
@@ -799,4 +819,12 @@ void MODClass::MODStop()
 void MODClass::MODPause()
 {
 
+}
+
+void MODClass::GetPatternAsString(int pattern_nr, char **pattern)
+{
+    if(pattern_nr < mod_pattern_count)
+    {
+
+    }
 }

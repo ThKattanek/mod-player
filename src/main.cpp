@@ -23,9 +23,14 @@ MODClass* mod = NULL;
 int main(int argc, char *argv[])
 {
     char* filename;
+    TTF_Font* font1;
+
+    char pattern_str[0x3f][255];
 
     if(argc > 1)
         filename = argv[1];
+    else
+        filename = NULL;
 
     mod = new MODClass(filename, AudioSampleRate);
 
@@ -41,8 +46,24 @@ int main(int argc, char *argv[])
     if (TTF_Init() < 0)
     {
         cerr << "Error: TTF not initialize." << endl;
+        SDL_Quit();
         return(0);
     }
+
+    font1 = TTF_OpenFont("ConsolaMono-Bold.ttf",32);
+    if(font1 == NULL)
+    {
+        cerr << "Error: TTF not open font." << endl;
+        SDL_Quit();
+        return(0);
+    }
+
+   // TTF_SetFontKerning(font1,1);
+
+    SDL_Color color_fg = {0,0,255,0};
+    SDL_Color color_hg = {0,0,0,255};
+    SDL_Surface* sf = TTF_RenderText_Blended(font1,"Hallo Welt! --- G-5 05 f01",color_fg);
+    SDL_Texture* tx = SDL_CreateTextureFromSurface(ren, sf);
 
 
     /// SLD Audio Installieren (C64 Emulation) ///
@@ -59,7 +80,6 @@ int main(int argc, char *argv[])
     {
         cerr << "<< ERROR: Fehler beim installieren von SDL_Audio" << endl;
     }
-
 
     if (want.format != have.format)
     {
@@ -80,11 +100,6 @@ int main(int argc, char *argv[])
     float y = 300;
     float N=5;
 
-
-    int numeric_input_count = 0;
-    unsigned char numeric_input_buffer[2];
-    unsigned char play_sample_number;
-
     while (!quit)
     {
         while (SDL_PollEvent(&event))
@@ -104,7 +119,6 @@ int main(int argc, char *argv[])
                     break;
 
                 case SDLK_ESCAPE:
-                    numeric_input_count = 0;
                     break;
 
                 default:
@@ -114,6 +128,14 @@ int main(int argc, char *argv[])
             if (event.type == SDL_MOUSEBUTTONDOWN){
                // quit = true;
             }
+        }
+
+        if(mod->ChangePattern)
+        {
+            mod->ChangePattern = false;
+            cout << "Pattern: " << mod->ChangePatternNr << endl;
+
+            mod->GetPatternAsString(mod->ChangePatternNr, (char**)pattern_str);
         }
 
         SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
@@ -140,11 +162,21 @@ int main(int argc, char *argv[])
         if(N==400)
             N=0;
 
+        int w, h;
+        SDL_QueryTexture(tx, NULL, NULL, &w, &h);
+        SDL_Rect rec1;
+        rec1.x = 0;
+        rec1.y = 0;
+        rec1.w = w;
+        rec1.h = h;
+        SDL_RenderCopy(ren,tx,&rec1,&rec1);
+
         SDL_RenderPresent(ren);
         SDL_Delay(1);
     }
 
     delete mod;
+    TTF_Quit();
     SDL_Quit();
     return 0;
 }
