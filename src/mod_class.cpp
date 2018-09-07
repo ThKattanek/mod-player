@@ -10,6 +10,9 @@ MODClass::MODClass(const char *filename, int samplerate)
     ChangePattern = false;
     ChangePatternNr = 0;
 
+    ChangePatternRow = false;
+    ChangePatternRowNr = 0;
+
     channel_pan = 0.3;
     channels = NULL;
 
@@ -457,6 +460,9 @@ void MODClass::NextLine()
     }
     //cout << endl;
 
+    ChangePatternRowNr = akt_pattern_line;
+    ChangePatternRow = true;
+
     akt_pattern_line++;
     if(akt_pattern_line == 64)
     {
@@ -819,6 +825,38 @@ void MODClass::MODStop()
 void MODClass::MODPause()
 {
 
+}
+
+bool ChangePattern;
+int  ChangePatternNr;
+
+bool ChangePatternRow;
+int  ChangePatternRowNr;
+
+bool MODClass::CheckPatternChange(int *pattern_nr)
+{
+    if(ChangePattern)
+    {
+        if(pattern_nr != NULL)
+            *pattern_nr = ChangePatternNr;
+        ChangePattern = false;
+        return true;
+    }
+    else
+        return false;
+}
+
+bool MODClass::CheckPatternRowChange(int *row_nr)
+{
+    if(ChangePatternRow)
+    {
+        if(row_nr != NULL)
+            *row_nr = ChangePatternRowNr;
+        ChangePatternRow = false;
+        return true;
+    }
+    else
+        return false;
 }
 
 void MODClass::GetPatternAsString(int pattern_nr, char **pattern)

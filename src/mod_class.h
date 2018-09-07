@@ -203,10 +203,10 @@ public:
     void MODStop(void);
     void MODPause(void);
 
-    void GetPatternAsString(int pattern_nr, char** pattern);
+    bool CheckPatternChange(int* pattern_nr);
+    bool CheckPatternRowChange(int* row_nr);
 
-    bool ChangePattern;
-    int  ChangePatternNr;
+    void GetPatternAsString(int pattern_nr, char** pattern);
 
 private:
     ///
@@ -232,6 +232,13 @@ private:
     ifstream file;
 
     int samplerate;
+
+    // Eventhandling
+    bool ChangePattern;
+    int  ChangePatternNr;
+
+    bool ChangePatternRow;
+    int  ChangePatternRowNr;
 
     // MOD
     char mod_name[21];

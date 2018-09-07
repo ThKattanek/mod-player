@@ -130,12 +130,18 @@ int main(int argc, char *argv[])
             }
         }
 
-        if(mod->ChangePattern)
+        int pattern_nr;
+        if(mod->CheckPatternChange(&pattern_nr))
         {
-            mod->ChangePattern = false;
-            cout << "Pattern: " << mod->ChangePatternNr << endl;
+            cout << "Pattern: " << pattern_nr << endl;
 
-            mod->GetPatternAsString(mod->ChangePatternNr, (char**)pattern_str);
+            mod->GetPatternAsString(pattern_nr, (char**)pattern_str);
+        }
+
+        int row_nr;
+        if(mod->CheckPatternRowChange(&row_nr))
+        {
+             cout << "Nr: " << row_nr << endl;
         }
 
         SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
