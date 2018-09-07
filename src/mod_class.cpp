@@ -405,8 +405,6 @@ void MODClass::NextLine()
 
         akt_pattern_line = pattern_break_line;
 
-        //cout << endl << "Pattern Nr: " << pattern_nr << endl;
-
         ChangePatternNr = pattern_nr;
         ChangePattern = true;
     }
@@ -415,13 +413,10 @@ void MODClass::NextLine()
         int pattern_nr = mod_pattern_tbl[song_pos];
         akt_pattern = mod_pattern[pattern_nr];
 
-        //cout << "Pattern Nr: " << pattern_nr << endl;
-
         ChangePatternNr = pattern_nr;
         ChangePattern = true;
     }
 
-    //cout << std::hex << setfill('0') << setw(2) << akt_pattern_line << "  | ";
     int pattern_line_adr = mod_channel_count * akt_pattern_line;
 
     int channel_nr = 0;
@@ -859,10 +854,12 @@ bool MODClass::CheckPatternRowChange(int *row_nr)
         return false;
 }
 
-void MODClass::GetPatternAsString(int pattern_nr, char **pattern)
+NOTE *MODClass::GetPatternRow(int pattern_nr, int pattern_row_nr)
 {
-    if(pattern_nr < mod_pattern_count)
+    if(pattern_nr < mod_pattern_count && pattern_row_nr < 64)
     {
-
+        return mod_pattern[pattern_nr] + mod_channel_count * pattern_row_nr;
     }
+    else
+        return NULL;
 }

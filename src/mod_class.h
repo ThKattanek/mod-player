@@ -206,7 +206,7 @@ public:
     bool CheckPatternChange(int* pattern_nr);
     bool CheckPatternRowChange(int* row_nr);
 
-    void GetPatternAsString(int pattern_nr, char** pattern);
+    NOTE* GetPatternRow(int pattern_nr, int pattern_row_nr);
 
 private:
     ///

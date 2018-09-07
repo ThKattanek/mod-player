@@ -27,6 +27,10 @@ int main(int argc, char *argv[])
 
     char pattern_str[0x3f][255];
 
+    int play_row_nr;
+    int play_pattern_nr;
+    NOTE* note;
+
     if(argc > 1)
         filename = argv[1];
     else
@@ -130,18 +134,47 @@ int main(int argc, char *argv[])
             }
         }
 
-        int pattern_nr;
-        if(mod->CheckPatternChange(&pattern_nr))
+        // Check of change playing pattern
+        if(mod->CheckPatternChange(&play_pattern_nr))
         {
-            cout << "Pattern: " << pattern_nr << endl;
-
-            mod->GetPatternAsString(pattern_nr, (char**)pattern_str);
+            cout << endl << "Pattern Nr: " << play_pattern_nr << endl;
         }
 
-        int row_nr;
-        if(mod->CheckPatternRowChange(&row_nr))
+        // Chaeck of change playing pattern_row
+        if(mod->CheckPatternRowChange(&play_row_nr))
         {
-             cout << "Nr: " << row_nr << endl;
+           note = mod->GetPatternRow(play_pattern_nr, play_row_nr);
+
+           if(note != NULL)
+           {
+             cout << std::hex << setfill('0') << setw(2) << play_row_nr << "  | ";
+
+             for(int i=0; i<4;i++)
+             {
+                /// NOTE and Octave output
+                if(note->note_number < 12)
+                    cout << NOTE_STRING[note->note_number] << (int)note->oktave_number;
+                else
+                    cout << "...";
+                cout << " ";
+
+                /// Samplenumber output
+                if((int)note->sample_number > 0)
+                {
+                    cout << std::hex << setfill('0') << setw(2) << (int)note->sample_number << " ";
+                }
+                else
+                    cout << ".. ";
+
+                /// Effectnumber and Effectdata output
+                if(note->effectcommand == 0x00 && note->effectdata == 0x00)
+                    cout << "... | ";
+                else
+                    cout << std::hex << "\033[1;31m" << (int)note->effectcommand << "\033[0m" << setfill('0') << setw(2) << (int)note->effectdata <<  " | ";
+                note++;
+             }
+             cout << endl;
+           }
         }
 
         SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
