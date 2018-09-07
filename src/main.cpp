@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     char* filename;
     TTF_Font* font1;
 
-    char pattern_str[0x3f][255];
+    char str1[1024];
 
     int play_row_nr;
     int play_pattern_nr;
@@ -66,8 +66,10 @@ int main(int argc, char *argv[])
 
     SDL_Color color_fg = {0,0,255,0};
     SDL_Color color_hg = {0,0,0,255};
-    SDL_Surface* sf = TTF_RenderText_Blended(font1,"Hallo Welt! --- G-5 05 f01",color_fg);
-    SDL_Texture* tx = SDL_CreateTextureFromSurface(ren, sf);
+    //SDL_Surface* sf = TTF_RenderText_Blended(font1,"Hallo Welt! --- G-5 05 f01",color_fg);
+    //SDL_Texture* tx = SDL_CreateTextureFromSurface(ren, sf);
+    SDL_Surface* sf;
+    SDL_Texture* tx;
 
 
     /// SLD Audio Installieren (C64 Emulation) ///
@@ -177,10 +179,15 @@ int main(int argc, char *argv[])
            }
         }
 
+        //cout << std::hex << setfill('0') << setw(2) << play_row_nr << "  | ";
+        sprintf(str1, "%.2X | ",play_row_nr);
+
+        sf = TTF_RenderText_Blended(font1,str1,color_fg);
+        tx = SDL_CreateTextureFromSurface(ren, sf);
+        SDL_FreeSurface(sf);
+
         SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
-
         SDL_RenderClear(ren);
-
         SDL_SetRenderDrawColor(ren,0,0,0,0);
 
         float px1=r*cos(0)+x;
