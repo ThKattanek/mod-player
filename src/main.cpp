@@ -75,7 +75,9 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-    SDL_Color color_fg = {0,0,255,0};
+    cout << TTF_FontHeight(font1) << endl;
+
+    SDL_Color color_fg = {0,50,150,0};
     SDL_Color color_hg = {0,0,0,255};
 
     /// SLD Audio Installieren (C64 Emulation) ///
@@ -183,11 +185,28 @@ int main(int argc, char *argv[])
         SDL_RenderDrawLine(ren,0,y,screensize_w,y);
         SDL_RenderDrawLine(ren,0,y+16,screensize_w,y+16);
 
+        // Volume Visible
+        for(int i=0; i<mod->GetModChannelCount(); i++)
+        {
+            float vol = mod->GetChannelVolumeVisualValue(i);
+            rec1.x = i*117 + 38 ;
+            rec1.y = screensize_h / 2 - 5;
+            rec1.w = 10;
+            rec1.h = -120.0 * vol;
+            //SDL_SetRenderDrawColor(ren,255*(vol),255*(1.0-vol),0,0);
+            SDL_SetRenderDrawColor(ren,0,255,0,0);
+            SDL_RenderFillRect(ren,&rec1);
+
+            SDL_SetRenderDrawColor(ren,0,0,0,0);
+            SDL_RenderDrawRect(ren,&rec1);
+        }
+
         SDL_RenderPresent(ren);
         SDL_Delay(1);
     }
 
     delete mod;
+
     TTF_Quit();
     SDL_Quit();
     return 0;

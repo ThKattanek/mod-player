@@ -33,6 +33,8 @@ MODClass::MODClass(const char *filename, int samplerate)
         mod_pattern[i] = NULL;
     }
 
+    volume_visual_counter_value = (1.0 / FPS) / VOLUME_VISUAL_DOWN_TIME;
+
     ModRead(filename);
 }
 
@@ -117,6 +119,15 @@ SAMPLE *MODClass::GetModSample(int sample_nr)
         }
     }
     return NULL;
+}
+
+float MODClass::GetChannelVolumeVisualValue(int channel_nr)
+{
+    if((channel_nr >= 0 && channel_nr < mod_channel_count))
+    {
+        return channels[channel_nr].volume_visual;
+    }
+    return 0;
 }
 
 void MODClass::FillAudioBuffer(signed short *stream, int length)
@@ -449,6 +460,8 @@ void MODClass::NextLine()
 
 void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 {
+    bool note_attack = false;
+
     // Arpeggio beenden -> gilt nur für eine Line
     channels[channel_nr].arpeggio = false;
 
@@ -491,6 +504,8 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
 
         channels[channel_nr].sample_pos = 2;
+
+        note_attack = true;
     }
 
     // Effekte
@@ -647,6 +662,12 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     default:
         break;
     }
+
+    if(note_attack)
+    {
+        if(channels[channel_nr].volume > channels[channel_nr].volume_visual)
+            channels[channel_nr].volume_visual = channels[channel_nr].volume;
+    }
 }
 
 float MODClass::CalcFrequCounterStart(int period)
@@ -772,6 +793,16 @@ void MODClass::CalcNextThick()
             channels[i].volume -= (channels[i].volume_slide_value / 64.0f);
             if(channels[i].volume < 0.0) channels[i].volume = 0.0;
         }
+
+        // For Extern Visual Effects
+
+        if(channels[i].volume_visual > 0.0)
+        {
+            channels[i].volume_visual -= volume_visual_counter_value;
+            if(channels[i].volume_visual < 0.0)
+                channels[i].volume_visual = 0.0;
+        }
+
     }
 }
 

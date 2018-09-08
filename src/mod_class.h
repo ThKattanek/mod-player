@@ -114,6 +114,8 @@ static const signed short VIBRATO_TABLE[32] = {0,24,49,74,97,120,141,161,180,197
 #define MAX_PATTERN 128
 #define MAX_ROW 64
 
+#define VOLUME_VISUAL_DOWN_TIME 0.8
+
 #define PAL
 //#define NTSC
 
@@ -187,6 +189,7 @@ struct CHANNEL
     int     vibrato_speed = 0;
     int     vibrato_depth = 0;
     int     vibrato_pos = 0;
+    float   volume_visual = 0.0;
 };
 
 class MODClass
@@ -256,6 +259,13 @@ public:
     /// \return Pointer SAMPLE
     ///
     SAMPLE* GetModSample(int sample_nr);
+
+    ///
+    /// \brief GetChannelVolumeVisualValue - Return a value from 0.0 to 1.0 for visual painting
+    /// \param channel_nr - channel number
+    /// \return volume as float
+    ///
+    float GetChannelVolumeVisualValue(int channel_nr);
 
     ///
     /// \brief FillAudioBuffer - Fill the AudioStream (16Bit/Stereo) with audio data
@@ -343,6 +353,9 @@ private:
 
     bool    set_song_speed;
     int     set_song_speed_var;
+
+    // For Extern Visuals
+    float   volume_visual_counter_value;
 };
 
 #endif // MODCLASS_H
