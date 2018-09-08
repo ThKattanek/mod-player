@@ -23,7 +23,7 @@ using namespace std;
 #define MAX_PATTERN 128
 #define MAX_ROW 64
 
-#define VOLUME_VISUAL_DOWN_TIME 0.7
+#define VOLUME_VISUAL_DOWN_TIME 1.0
 
 #define PAL
 //#define NTSC

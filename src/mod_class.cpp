@@ -664,10 +664,7 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     }
 
     if(note_attack)
-    {
-        if(channels[channel_nr].volume > channels[channel_nr].volume_visual)
-            channels[channel_nr].volume_visual = channels[channel_nr].volume;
-    }
+        channels[channel_nr].volume_visual = channels[channel_nr].volume;
 }
 
 float MODClass::CalcFrequCounterStart(int period)
