@@ -17,16 +17,23 @@ using namespace std;
 #endif
 
 void AudioMix(void* userdat, Uint8 *stream, int length);
+void GetStringFromPatterLine(char *output_str, int pattern_nr, int pattern_row_nr);
 
 MODClass* mod = NULL;
 
 #undef main
 int main(int argc, char *argv[])
 {
-    char* filename;
-    TTF_Font* font1;
+    int screensize_w = 800;
+    int screensize_h = 600;
 
+    char* filename;
+
+    TTF_Font* font1;
     char str1[1024];
+    char str2[1024];
+    SDL_Surface* sf;
+    SDL_Texture* tx[MAX_ROW];
 
     int play_row_nr;
     int play_pattern_nr;
@@ -40,12 +47,17 @@ int main(int argc, char *argv[])
     mod = new MODClass(filename, AudioSampleRate);
 
     if(!mod->ModIsLoaded())
+    {
+        if(filename != NULL)
+            cerr << "Mod [" << filename <<  "] cannot loaded." << endl;
+        else
+            cerr << "Mod cannot loaded." << endl;
         return(0);
+    }
 
-    cout << "Demo-01" << endl;
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
-    SDL_Window *win = SDL_CreateWindow("Hello World!", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
+    SDL_Window *win = SDL_CreateWindow(filename, 100, 100, screensize_w, screensize_h, SDL_WINDOW_SHOWN);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
     if (TTF_Init() < 0)
@@ -55,7 +67,7 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-    font1 = TTF_OpenFont("ConsolaMono-Bold.ttf",32);
+    font1 = TTF_OpenFont("ConsolaMono-Bold.ttf",16);
     if(font1 == NULL)
     {
         cerr << "Error: TTF not open font." << endl;
@@ -63,15 +75,8 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-   // TTF_SetFontKerning(font1,1);
-
     SDL_Color color_fg = {0,0,255,0};
     SDL_Color color_hg = {0,0,0,255};
-    //SDL_Surface* sf = TTF_RenderText_Blended(font1,"Hallo Welt! --- G-5 05 f01",color_fg);
-    //SDL_Texture* tx = SDL_CreateTextureFromSurface(ren, sf);
-    SDL_Surface* sf;
-    SDL_Texture* tx;
-
 
     /// SLD Audio Installieren (C64 Emulation) ///
     SDL_AudioSpec want,have;
@@ -100,13 +105,6 @@ int main(int argc, char *argv[])
     SDL_Event event;
     bool quit = false;
 
-    uint8_t clr = 200;
-
-    float r = 290;
-    float x = 400;
-    float y = 300;
-    float N=5;
-
     while (!quit)
     {
         while (SDL_PollEvent(&event))
@@ -118,11 +116,9 @@ int main(int argc, char *argv[])
                 switch(event.key.keysym.sym)
                 {
                 case SDLK_PLUS:
-                    N++;
                     break;
 
                 case SDLK_MINUS:
-                    N--;
                     break;
 
                 case SDLK_ESCAPE:
@@ -140,86 +136,52 @@ int main(int argc, char *argv[])
         // Check of change playing pattern
         if(mod->CheckPatternChange(&play_pattern_nr))
         {
-            cout << endl << "Pattern Nr: " << play_pattern_nr << endl;
+            for(int i=0; i<MAX_ROW; i++)
+            {
+                GetStringFromPatterLine(str1, play_pattern_nr, i);
+
+                SDL_Surface* sf = TTF_RenderText_Blended(font1,str1,color_fg);
+                tx[i] = SDL_CreateTextureFromSurface(ren, sf);
+                SDL_SetTextureBlendMode(tx[0], SDL_BLENDMODE_BLEND);
+                SDL_FreeSurface(sf);
+            }
         }
 
         // Chaeck of change playing pattern_row
         if(mod->CheckPatternRowChange(&play_row_nr))
         {
-           note = mod->GetPatternRow(play_pattern_nr, play_row_nr);
-
-           if(note != NULL)
-           {
-             cout << std::hex << setfill('0') << setw(2) << play_row_nr << "  | ";
-
-             for(int i=0; i<4;i++)
-             {
-                /// NOTE and Octave output
-                if(note->note_number < 12)
-                    cout << NOTE_STRING[note->note_number] << (int)note->oktave_number;
-                else
-                    cout << "...";
-                cout << " ";
-
-                /// Samplenumber output
-                if((int)note->sample_number > 0)
-                {
-                    cout << std::hex << setfill('0') << setw(2) << (int)note->sample_number << " ";
-                }
-                else
-                    cout << ".. ";
-
-                /// Effectnumber and Effectdata output
-                if(note->effectcommand == 0x00 && note->effectdata == 0x00)
-                    cout << "... | ";
-                else
-                    cout << std::hex << "\033[1;31m" << (int)note->effectcommand << "\033[0m" << setfill('0') << setw(2) << (int)note->effectdata <<  " | ";
-                note++;
-             }
-             cout << endl;
-           }
+            //GetStringFromPatterLine(str1, play_pattern_nr, play_row_nr);
         }
 
-        //cout << std::hex << setfill('0') << setw(2) << play_row_nr << "  | ";
-        sprintf(str1, "%.2X | ",play_row_nr);
-
-        sf = TTF_RenderText_Blended(font1,str1,color_fg);
-        tx = SDL_CreateTextureFromSurface(ren, sf);
-        SDL_FreeSurface(sf);
-
-        SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
+        SDL_SetRenderDrawColor(ren,130,130,200,0);
         SDL_RenderClear(ren);
 
-        SDL_SetRenderDrawColor(ren,0,0,0,0);
-
-        /*
-        float px1=r*cos(0)+x;
-        float py1=r*sin(0)+y;
-
-        for(int i=1; i<N; i++)
-        {
-            float px2=r*cos(360.0 * i/N)+x;
-            float py2=r*sin(360.0 * i/N)+y;
-
-            SDL_RenderDrawLine(ren,px1,py1,px2,py2);
-
-            px1 = px2;
-            py1 = py2;
-        }
-
-        N++;
-        if(N==400)
-            N=0;
-        */
+        SDL_SetRenderDrawColor(ren,200,0,0,0);
 
         int w, h;
-        SDL_QueryTexture(tx, NULL, NULL, &w, &h);
+        SDL_QueryTexture(tx[0], NULL, NULL, &w, &h);
         SDL_Rect rec1;
         rec1.x = 0;
         rec1.y = 0;
         rec1.w = w;
         rec1.h = h;
-        SDL_RenderCopy(ren,tx,&rec1,&rec1);
+
+        SDL_Rect rec2 = rec1;
+
+        rec2.x =5;
+        rec2.y = screensize_h / 2 - 16 / 2;
+        rec2.y -= play_row_nr * 16;
+
+        for(int i=0; i<MAX_ROW; i++)
+        {
+            SDL_RenderCopy(ren,tx[i],&rec1,&rec2);
+            rec2.y += 16;
+        }
+
+        int y = screensize_h / 2-4;
+
+        SDL_RenderDrawLine(ren,0,y,screensize_w,y);
+        SDL_RenderDrawLine(ren,0,y+16,screensize_w,y+16);
 
         SDL_RenderPresent(ren);
         SDL_Delay(1);
@@ -237,4 +199,56 @@ void AudioMix(void* userdat, Uint8 *stream, int length)
         mod->FillAudioBuffer((signed short*)stream, length/2);
     else
         for(int i=0; i<length; i++) stream[i] = 0;
+}
+
+void GetStringFromPatterLine(char* output_str, int pattern_nr, int pattern_row_nr)
+{
+    NOTE* note = mod->GetPatternRow(pattern_nr, pattern_row_nr);
+
+    char str1[1024];
+
+    output_str[0] = 0;
+    str1[0] = 0;
+
+    if(note != NULL)
+    {
+         sprintf(str1,"%.2x | ",pattern_row_nr);
+         strcat(output_str,str1);
+         for(int i=0; i<mod->GetModChannelCount();i++)
+         {
+             /// NOTE and Octave output
+             if(note->note_number < 12)
+             {
+                 sprintf(str1,"%s%d ",NOTE_STRING[note->note_number],(int)note->oktave_number);
+                 strcat(output_str,str1);
+             }
+             else
+             {
+                 strcat(output_str,"... ");
+             }
+
+             /// Samplenumber output
+             if((int)note->sample_number > 0)
+             {
+                 sprintf(str1,"%.2d ",(int)note->sample_number);
+                 strcat(output_str,str1);
+             }
+             else
+             {
+                 strcat(output_str,".. ");
+             }
+
+             /// Effectnumber and Effectdata output
+             if(note->effectcommand == 0x00 && note->effectdata == 0x00)
+             {
+                 strcat(output_str,"... | ");
+             }
+             else
+             {
+                 sprintf(str1,"%.1x%.2x | ",(int)note->effectcommand,(int)note->effectdata);
+                 strcat(output_str,str1);
+             }
+             note++;
+         }
+    }
 }
