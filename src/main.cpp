@@ -93,8 +93,8 @@ int main(int argc, char *argv[])
     amask = 0xff000000;
 #endif
 
-    int bar_w = 10;
-    int bar_h = 100;
+    int bar_w = 12;
+    int bar_h = 120;
 
     surface = SDL_CreateRGBSurface(SDL_SWSURFACE, bar_w, bar_h, 32, rmask, gmask, bmask, amask);
 
@@ -258,6 +258,12 @@ int main(int argc, char *argv[])
             dst_rec.h = bar_rec.h - (1.0-vol) * bar_rec.h;
 
             SDL_RenderCopy(ren,texture,&src_rec,&dst_rec);
+
+            if(vol > 0)
+            {
+                SDL_SetRenderDrawColor(ren,100,100,100,0);
+                SDL_RenderDrawRect(ren,&dst_rec);
+            }
         }
 
         SDL_RenderPresent(ren);
