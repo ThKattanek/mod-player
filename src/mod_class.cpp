@@ -1,3 +1,15 @@
+//////////////////////////////////////////////////
+//                                              //
+// MODClass                                     //
+// by Thorsten Kattanek                         //
+//                                              //
+// #file: mod_class.cpp                         //
+//                                              //
+// last change: 09-08-2018                      //
+// https://github.com/ThKattanek/mod-player     //
+//                                              //
+//////////////////////////////////////////////////
+
 #include "mod_class.h"
 
 MODClass::MODClass(const char *filename, int samplerate)

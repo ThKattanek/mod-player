@@ -1,3 +1,15 @@
+//////////////////////////////////////////////////
+//                                              //
+// MODClass                                     //
+// by Thorsten Kattanek                         //
+//                                              //
+// #file: mod_class.h                           //
+//                                              //
+// last change: 09-08-2018                      //
+// https://github.com/ThKattanek/mod-player     //
+//                                              //
+//////////////////////////////////////////////////
+
 #ifndef MODCLASS_H
 #define MODCLASS_H
 
