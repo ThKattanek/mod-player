@@ -21,7 +21,7 @@ MODClass::MODClass(const char *filename, int samplerate)
         mod_pattern[i] = NULL;
     }
 
-    MODRead(filename);
+    ModRead(filename);
 }
 
 MODClass::~MODClass()
@@ -37,6 +37,74 @@ MODClass::~MODClass()
 bool MODClass::ModIsLoaded()
 {
     return mod_is_loaded;
+}
+
+const char *MODClass::GetModName()
+{
+    if(mod_is_loaded)
+        return mod_name;
+    return NULL;
+}
+
+const char *MODClass::GetModType()
+{
+    if(mod_is_loaded)
+        return mod_type;
+    return NULL;
+}
+
+int MODClass::GetModSampleCount()
+{
+    if(mod_is_loaded)
+        return mod_sample_count;
+    return 0;
+}
+
+int MODClass::GetModSongLength()
+{
+    if(mod_is_loaded)
+        return mod_song_length;
+    return 0;
+}
+
+int MODClass::GetModSongEndJump()
+{
+    if(mod_is_loaded)
+        return mod_song_end_jump;
+    return 0;
+}
+
+const unsigned char *MODClass::GetModPatternTable()
+{
+    if(mod_is_loaded)
+        return mod_pattern_tbl;
+    return NULL;
+}
+
+int MODClass::GetModPatterCount()
+{
+    if(mod_is_loaded)
+        return mod_pattern_count;
+    return 0;
+}
+
+int MODClass::GetModChannelCount()
+{
+    if(mod_is_loaded)
+        return mod_channel_count;
+    return 0;
+}
+
+SAMPLE *MODClass::GetModSample(int sample_nr)
+{
+    if(mod_is_loaded)
+    {
+        if((sample_nr > 0) && (sample_nr <= mod_sample_count))
+        {
+            return &mod_samples[sample_nr-1];
+        }
+    }
+    return NULL;
 }
 
 void MODClass::FillAudioBuffer(signed short *stream, int length)
@@ -67,24 +135,21 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
     }
 }
 
-bool MODClass::MODRead(const char *filename)
+bool MODClass::ModRead(const char *filename)
 {
-    MODStop();
+    ModStop();
 
     mod_is_loaded = false;
 
     file.open(filename, ios::in | ios::binary);
     if(!file.is_open())
     {
-        cerr << "Modfile \"" << filename << "\" canno't open." << endl;
         return false;
     }
 
     // MOD Name
     file.read(mod_name,20);
     mod_name[20] = 0;
-
-    cout << "Songname: " << mod_name << endl;
 
     // MOD Type
     file.seekg(1080, ios::beg);
@@ -129,23 +194,16 @@ bool MODClass::MODRead(const char *filename)
         }
     }
 
-    cout << "Modtype: " << mod_type << endl;
-
     // SAMPLES
     if(mod_type_id == _NST)
         mod_sample_count = 15;
     else mod_sample_count = 31;
-
-    cout << endl;
-    cout << mod_sample_count << " samples " << "used in this MOD" << endl;
 
     for(int i=0; i<mod_sample_count; i++)
     {
         // Sample Name
         file.read(mod_samples[i].name,22);
         mod_samples[i].name[22] = 0;
-
-        cout << "Nr.: " << i+1 << " - " << mod_samples[i].name << endl;
 
         // Sample length
         file.read((char*)&mod_samples[i].length,2);
@@ -155,18 +213,13 @@ bool MODClass::MODRead(const char *filename)
         length[1] = tmp;
         mod_samples[i].length *=2;
 
-        cout << "\tLength: " << mod_samples[i].length << endl;
-
         // Finetune
         unsigned char finetune;
         file.read((char*)&finetune,1);
         mod_samples[i].finetune = finetune & 0x0f;
 
-        cout << "\tFinetune: " << (int)mod_samples[i].finetune << endl;
-
         // Volume
         file.read((char*)&mod_samples[i].volume,1);
-        cout << "\tVolume: " << (int)mod_samples[i].volume << endl;
 
         // Loop start
         file.read((char*)&mod_samples[i].loop_start,2);
@@ -176,8 +229,6 @@ bool MODClass::MODRead(const char *filename)
         loop_start[1] = tmp;
         mod_samples[i].loop_start *=2;
 
-        cout << "\tLoopStart: " << mod_samples[i].loop_start << endl;
-
         // Loop length
         file.read((char*)&mod_samples[i].loop_length,2);
         unsigned char *loop_length = (unsigned char*)&mod_samples[i].loop_length;
@@ -185,46 +236,26 @@ bool MODClass::MODRead(const char *filename)
         loop_length[0] = loop_length[1];
         loop_length[1] = tmp;
         mod_samples[i].loop_length *=2;
-
-        cout << "\tLoopLength: " << mod_samples[i].loop_length << endl;
-
     }
-
-    cout << endl << endl;
 
     // MOD Song Length
     file.read((char*)&mod_song_length,1);
-    cout << "Song Length: " << (int)mod_song_length << endl;
 
     // MOD Song End Jump
     file.read((char*)&mod_song_end_jump,1);
-    cout << "Song End Jump: " << (int)mod_song_end_jump << endl;
 
-    // MOD Song End Jump
+    // MOD Patterntable
     file.read((char*)&mod_pattern_tbl,128);
 
-    cout << endl << "Pattern Table:" << endl;
-    int col_count = 0;
-
     int max_pattern_nr = 0;
-
     for(int i=0; i<128; i++)
     {
         if(mod_pattern_tbl[i] > max_pattern_nr)
             max_pattern_nr = mod_pattern_tbl[i];
-
-        cout << std::hex  << (int)mod_pattern_tbl[i] << " ";
-        col_count++;
-        if(col_count == 16)
-        {
-            cout << endl;
-            col_count=0;
-        }
     }
 
     // Pattern Count
     mod_pattern_count = max_pattern_nr+1;
-    cout << endl << "Pattern Count: " << (int)mod_pattern_count << endl;
 
     // Channel Count
     switch(mod_type_id)
@@ -244,7 +275,6 @@ bool MODClass::MODRead(const char *filename)
     default:
         mod_channel_count = 0;
     }
-    cout << "Chanel Count: " << (int)mod_channel_count << endl;
 
     if(channels != NULL)
         delete[] channels;
@@ -287,40 +317,6 @@ bool MODClass::MODRead(const char *filename)
             mod_pattern[i][j].effectdata = note[3];
 
             NoteConvert(&mod_pattern[i][j],false);
-        }
-
-        // Ausgabe des Pattern auf Konsole
-        cout << endl << endl << "--- Pattern - [" << i << "] ---" << endl << endl;
-
-        int channel = 0;
-        int row = 0;
-        for(int j=0; j<mod_pattern_size; j++)
-        {
-            if(channel == 0) cout << std::hex << setfill('0') << setw(2) << row << "  | ";
-            if(mod_pattern[i][j].note_number < 12)
-                cout << NOTE_STRING[mod_pattern[i][j].note_number] << (int)mod_pattern[i][j].oktave_number;
-            else
-                cout << "...";
-            cout << " ";
-
-            if((int)mod_pattern[i][j].sample_number > 0)
-            {
-                cout << std::hex << setfill('0') << setw(2) << (int)mod_pattern[i][j].sample_number << " ";
-            }
-            else
-                cout << ".. ";
-
-            if(mod_pattern[i][j].effectcommand == 0x00 && mod_pattern[i][j].effectdata == 0x00)
-                cout << "... | ";
-            else
-                cout << std::hex << (int)mod_pattern[i][j].effectcommand << setfill('0') << setw(2) << (int)mod_pattern[i][j].effectdata <<  " | ";
-            channel++;
-            if (channel == mod_channel_count)
-            {
-                channel = 0;
-                row++;
-                cout << endl;
-            }
         }
     }
 
@@ -423,37 +419,8 @@ void MODClass::NextLine()
     for(int i=pattern_line_adr; i<pattern_line_adr + mod_channel_count; i++)
     {
         CalcChannelData(channel_nr, &akt_pattern[i]);
-
-        /// NOTE and Octave output
-        /*
-        if(akt_pattern[i].note_number < 12)
-            cout << NOTE_STRING[akt_pattern[i].note_number] << (int)akt_pattern[i].oktave_number;
-        else
-            cout << "...";
-        cout << " ";
-        */
-
-        /// Samplenumber output
-        /*
-        if((int)akt_pattern[i].sample_number > 0)
-        {
-            cout << std::hex << setfill('0') << setw(2) << (int)akt_pattern[i].sample_number << " ";
-        }
-        else
-            cout << ".. ";
-        */
-
-        /// Effectnumber and Effectdata output
-        /*
-        if(akt_pattern[i].effectcommand == 0x00 && akt_pattern[i].effectdata == 0x00)
-            cout << "... | ";
-        else
-            cout << std::hex << "\033[1;31m" << (int)akt_pattern[i].effectcommand << "\033[0m" << setfill('0') << setw(2) << (int)akt_pattern[i].effectdata <<  " | ";
-        */
-
         channel_nr++;
     }
-    //cout << endl;
 
     ChangePatternRowNr = akt_pattern_line;
     ChangePatternRow = true;
@@ -461,7 +428,6 @@ void MODClass::NextLine()
     akt_pattern_line++;
     if(akt_pattern_line == 64)
     {
-        //cout << endl;
         akt_pattern_line = 0;
         song_pos++;
         if(song_pos == mod_song_length)
@@ -797,7 +763,7 @@ void MODClass::CalcNextThick()
     }
 }
 
-void MODClass::MODPlay()
+void MODClass::ModPlay()
 {
     thick_counter_start = 6;
     thick_counter = thick_counter_start;
@@ -812,12 +778,12 @@ void MODClass::MODPlay()
     mod_is_playing = true;
 }
 
-void MODClass::MODStop()
+void MODClass::ModStop()
 {
     mod_is_playing = false;
 }
 
-void MODClass::MODPause()
+void MODClass::ModPause()
 {
 
 }

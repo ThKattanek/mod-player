@@ -1,8 +1,6 @@
 #ifndef MODCLASS_H
 #define MODCLASS_H
 
-#include <iostream>
-#include <iomanip>
 #include <fstream>
 #include <cstring>
 
@@ -187,10 +185,65 @@ public:
     ~MODClass();
 
     ///
-    /// \brief ModIsLoaded
-    /// \return true - Modfile is correct loaded, false - Modfile is not loaded
+    /// \brief ModIsLoaded - Check of mod is loaded
+    /// \return mod load status as bool - true = Mod is correct loaded, false = Mod is not loaded
     ///
     bool ModIsLoaded(void);
+
+    ///
+    /// \brief GetModName - Get the name from loaded modul
+    /// \return mod name as const char*
+    ///
+    const char* GetModName();
+
+    ///
+    /// \brief GetModType - Get mod typ as string
+    /// \return mod type as const char*
+    ///
+    const char* GetModType();
+
+    ///
+    /// \brief GetModSampleCount - Get count of samples in this mod
+    /// \return sample count as int
+    ///
+    int GetModSampleCount();
+
+    ///
+    /// \brief GetModSongLength - Get song lenght from this mod
+    /// \return song length as int
+    ///
+    int GetModSongLength();
+
+    ///
+    /// \brief GetModSongEndJump - get end jump position of mod
+    /// \return jump end posistion as int
+    ///
+    int GetModSongEndJump();
+
+    ///
+    /// \brief GetModPatternTable - Get the song pattern Table with max. 128 entries
+    /// \return Pointer to the Pattern Table as const char*
+    ///
+    const unsigned char* GetModPatternTable();
+
+    ///
+    /// \brief GetModPatterCount - Get max. used pattern
+    /// \return pattern count as int
+    ///
+    int GetModPatterCount();
+
+    ///
+    /// \brief GetModChannelCount - Get sound channels for this mod
+    /// \return Count of used sound channels as int
+    ///
+    int GetModChannelCount();
+
+    ///
+    /// \brief GetModSample Get the SAMPLE object from this mod
+    /// \param sample_nr Sample Number (1-15) or (1-31)
+    /// \return Pointer SAMPLE
+    ///
+    SAMPLE* GetModSample(int sample_nr);
 
     ///
     /// \brief FillAudioBuffer - Fill the AudioStream (16Bit/Stereo) with audio data
@@ -199,9 +252,9 @@ public:
     ///
     void FillAudioBuffer(signed short* stream, int length);
 
-    void MODPlay(void);
-    void MODStop(void);
-    void MODPause(void);
+    void ModPlay(void);
+    void ModStop(void);
+    void ModPause(void);
 
     bool CheckPatternChange(int* pattern_nr);
     bool CheckPatternRowChange(int* row_nr);
@@ -213,10 +266,10 @@ private:
     /// \brief MODRead - reading a modfile
     /// \param filename - filename to the modfile
     ///
-    bool MODRead(const char *filename);
+    bool ModRead(const char *filename);
 
     ///
-    /// \brief NoteConvert - convert the note from period to note and octave or note an octave to note
+    /// \brief NoteConvert - convert the 'note from period to note' and 'octave or note an octave to note'
     /// \param note - pointer to a NOTE object
     /// \param direction - false = period to note | true = note to period
     ///
@@ -242,7 +295,7 @@ private:
 
     // MOD
     char mod_name[21];
-    unsigned char mod_type[5];
+    char mod_type[5];
     unsigned char mod_type_id;
     int mod_sample_count;
     SAMPLE mod_samples[31];

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <math.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -94,7 +95,7 @@ int main(int argc, char *argv[])
 
     SDL_PauseAudio(0);
 
-    mod->MODPlay();
+    mod->ModPlay();
 
     SDL_Event event;
     bool quit = false;
@@ -188,8 +189,10 @@ int main(int argc, char *argv[])
 
         SDL_SetRenderDrawColor(ren,clr,clr,clr,0);
         SDL_RenderClear(ren);
+
         SDL_SetRenderDrawColor(ren,0,0,0,0);
 
+        /*
         float px1=r*cos(0)+x;
         float py1=r*sin(0)+y;
 
@@ -207,6 +210,7 @@ int main(int argc, char *argv[])
         N++;
         if(N==400)
             N=0;
+        */
 
         int w, h;
         SDL_QueryTexture(tx, NULL, NULL, &w, &h);
