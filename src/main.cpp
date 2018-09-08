@@ -11,7 +11,7 @@ using namespace std;
 #define AudioSampleRate 44100
 
 #ifdef _WIN32
-    #define AudioPufferSize (882)    // 882 bei 44.100 Khz
+    #define AudioPufferSize (882*1)    // 882 bei 44.100 Khz
 #else
     #define AudioPufferSize (882*2)    // 882 bei 44.100 Khz
 #endif
@@ -75,12 +75,66 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-    cout << TTF_FontHeight(font1) << endl;
+    // Crate Channel Volume Visible Texture
+    SDL_Surface *surface;
+    Uint32 rmask, gmask, bmask, amask;
+
+    /* SDL interprets each pixel as a 32-bit number, so our masks must depend
+       on the endianness (byte order) of the machine */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    int bar_w = 10;
+    int bar_h = 100;
+
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, bar_w, bar_h, 32, rmask, gmask, bmask, amask);
+
+    float r,g,b;
+
+    r=1.0;
+    g=0.0;
+    b=0.0;
+
+    SDL_Rect bar_rec = {0,0,bar_w,1};
+
+    unsigned long color1;
+
+    for(int i=0; i<bar_h/2; i++)
+    {
+        bar_rec.y = i;
+        g = i*(1.0/(bar_h/2));
+        color1 = 0xff000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
+        SDL_FillRect(surface,&bar_rec,color1);
+    }
+
+    for(int i=0; i<bar_h/2; i++)
+    {
+        bar_rec.y = i+bar_h/2;
+        r = (bar_h/2-i)*(1.0/(bar_h/2));
+        color1 = 0xff000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
+        SDL_FillRect(surface,&bar_rec,color1);
+    }
+
+    bar_rec.y = 0;
+    bar_rec.h = bar_h;
+
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(ren, surface);
+    SDL_FreeSurface(surface);
+
+    ////////////////////////////////////////////////////////////////////////////////////
 
     SDL_Color color_fg = {0,50,150,0};
-    SDL_Color color_hg = {0,0,0,255};
 
-    /// SLD Audio Installieren (C64 Emulation) ///
+    /// SLD Audio Installieren ///
     SDL_AudioSpec want,have;
     SDL_memset(&want, 0, sizeof(want));
     want.freq = AudioSampleRate;
@@ -186,19 +240,24 @@ int main(int argc, char *argv[])
         SDL_RenderDrawLine(ren,0,y+16,screensize_w,y+16);
 
         // Volume Visible
+
+        SDL_Rect dst_rec, src_rec;
+
         for(int i=0; i<mod->GetModChannelCount(); i++)
         {
-            float vol = mod->GetChannelVolumeVisualValue(i);
-            rec1.x = i*117 + 38 ;
-            rec1.y = screensize_h / 2 - 5;
-            rec1.w = 10;
-            rec1.h = -120.0 * vol;
-            //SDL_SetRenderDrawColor(ren,255*(vol),255*(1.0-vol),0,0);
-            SDL_SetRenderDrawColor(ren,0,255,0,0);
-            SDL_RenderFillRect(ren,&rec1);
+            dst_rec = src_rec = bar_rec;
 
-            SDL_SetRenderDrawColor(ren,0,0,0,0);
-            SDL_RenderDrawRect(ren,&rec1);
+            src_rec.x = 0;
+
+            float vol = mod->GetChannelVolumeVisualValue(i);
+
+            src_rec.y =  (1.0-vol) * bar_rec.h;
+
+            dst_rec.x = i*117 + 38;
+            dst_rec.y = src_rec.y + screensize_h / 2 - 3 - bar_rec.h;
+            dst_rec.h = bar_rec.h - (1.0-vol) * bar_rec.h;
+
+            SDL_RenderCopy(ren,texture,&src_rec,&dst_rec);
         }
 
         SDL_RenderPresent(ren);
