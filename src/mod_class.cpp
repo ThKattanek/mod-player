@@ -646,16 +646,18 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 
     case 0x0F:      // SetSpeed
 
-        /*
+
         if(note->effectdata < 32)
             thick_counter_start = note->effectdata;
-        */
 
+
+        /*
         if(note->effectdata < 32)
         {
             set_song_speed = true;
             set_song_speed_var = note->effectdata;
         }
+        */
 
         break;
 

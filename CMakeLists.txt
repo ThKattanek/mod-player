@@ -110,6 +110,8 @@ set(SOURCES
     src/main.cpp
     src/mod_class.cpp
     src/mod_class.h
+    src/level_meter_class.cpp
+    src/level_meter_class.h
 )
 
 ################### RESOURCEN #####################
