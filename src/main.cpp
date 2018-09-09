@@ -272,6 +272,15 @@ int main(int argc, char *argv[])
 
     delete mod;
 
+    TTF_CloseFont(font1);
+
+    SDL_DestroyTexture(texture);
+    for(int i=0; i<MAX_ROW; i++)
+    {
+        SDL_DestroyTexture(tx[i]);
+    }
+
+
     TTF_Quit();
     SDL_Quit();
     return 0;
