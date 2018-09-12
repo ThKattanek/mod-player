@@ -204,7 +204,9 @@ int main(int argc, char *argv[])
         SDL_RenderCopy(ren,tex,NULL,NULL);
 
         SDL_RenderPresent(ren);
-        SDL_Delay(1);
+
+        // if not VSYNC then
+        //SDL_Delay(1);
     }
 
     delete mod;
