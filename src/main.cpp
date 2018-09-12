@@ -55,8 +55,9 @@ int main(int argc, char *argv[])
 
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
-    SDL_Window *win = SDL_CreateWindow(filename, 100, 100, screensize_w, screensize_h, SDL_WINDOW_SHOWN);
-    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
+    SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
     if (TTF_Init() < 0)
     {
@@ -152,6 +153,9 @@ int main(int argc, char *argv[])
             //GetStringFromPatterLine(str1, play_pattern_nr, play_row_nr);
         }
 
+        // Alles folgende Rendern in Textur - tex
+        SDL_SetRenderTarget(ren,tex);
+
         SDL_SetRenderDrawColor(ren,130,130,200,0);
         SDL_RenderClear(ren);
 
@@ -188,6 +192,14 @@ int main(int argc, char *argv[])
             float vol = mod->GetChannelVolumeVisualValue(i);
             level_meter.Draw(i*117+38, screensize_h/2-3, vol);
         }
+
+        // Wieder auf Bildschirm rendern
+        SDL_SetRenderTarget(ren, NULL);
+
+        SDL_SetRenderDrawColor(ren,130,130,200,0);
+        SDL_RenderClear(ren);
+
+        SDL_RenderCopy(ren,tex,NULL,NULL);
 
         SDL_RenderPresent(ren);
         SDL_Delay(1);
