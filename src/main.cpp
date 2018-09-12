@@ -5,6 +5,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "./mod_class.h"
+#include "./level_meter_class.h"
 
 using namespace std;
 
@@ -72,62 +73,7 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-    // Crate Channel Volume Visible Texture
-    SDL_Surface *surface;
-    Uint32 rmask, gmask, bmask, amask;
-
-    /* SDL interprets each pixel as a 32-bit number, so our masks must depend
-       on the endianness (byte order) of the machine */
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    rmask = 0xff000000;
-    gmask = 0x00ff0000;
-    bmask = 0x0000ff00;
-    amask = 0x000000ff;
-#else
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = 0xff000000;
-#endif
-
-    int bar_w = 12;
-    int bar_h = 120;
-
-    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, bar_w, bar_h, 32, rmask, gmask, bmask, amask);
-
-    float r,g,b;
-
-    r=1.0;
-    g=0.0;
-    b=0.0;
-
-    SDL_Rect bar_rec = {0,0,bar_w,1};
-
-    unsigned long color1;
-
-    for(int i=0; i<bar_h/2; i++)
-    {
-        bar_rec.y = i;
-        g = i*(1.0/(bar_h/2));
-        color1 = 0xff000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
-        SDL_FillRect(surface,&bar_rec,color1);
-    }
-
-    for(int i=0; i<bar_h/2; i++)
-    {
-        bar_rec.y = i+bar_h/2;
-        r = (bar_h/2-i)*(1.0/(bar_h/2));
-        color1 = 0xff000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
-        SDL_FillRect(surface,&bar_rec,color1);
-    }
-
-    bar_rec.y = 0;
-    bar_rec.h = bar_h;
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(ren, surface);
-    SDL_FreeSurface(surface);
-
-    ////////////////////////////////////////////////////////////////////////////////////
+    LevelMeterClass level_meter(ren,12,120);
 
     SDL_Color color_fg = {0,50,150,0};
 
@@ -237,30 +183,10 @@ int main(int argc, char *argv[])
         SDL_RenderDrawLine(ren,0,y+16,screensize_w,y+16);
 
         // Volume Visible
-
-        SDL_Rect dst_rec, src_rec;
-
         for(int i=0; i<mod->GetModChannelCount(); i++)
         {
-            dst_rec = src_rec = bar_rec;
-
-            src_rec.x = 0;
-
             float vol = mod->GetChannelVolumeVisualValue(i);
-
-            src_rec.y =  (1.0-vol) * bar_rec.h;
-
-            dst_rec.x = i*117 + 38;
-            dst_rec.y = src_rec.y + screensize_h / 2 - 3 - bar_rec.h;
-            dst_rec.h = bar_rec.h - (1.0-vol) * bar_rec.h;
-
-            SDL_RenderCopy(ren,texture,&src_rec,&dst_rec);
-
-            if(vol > 0)
-            {
-                SDL_SetRenderDrawColor(ren,100,100,100,0);
-                SDL_RenderDrawRect(ren,&dst_rec);
-            }
+            level_meter.Draw(i*117+38, screensize_h/2-3, vol);
         }
 
         SDL_RenderPresent(ren);
@@ -271,7 +197,6 @@ int main(int argc, char *argv[])
 
     TTF_CloseFont(font1);
 
-    SDL_DestroyTexture(texture);
     for(int i=0; i<MAX_ROW; i++)
     {
         SDL_DestroyTexture(tx[i]);
