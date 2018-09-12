@@ -31,13 +31,10 @@ int main(int argc, char *argv[])
 
     TTF_Font* font1;
     char str1[1024];
-    char str2[1024];
-    SDL_Surface* sf;
     SDL_Texture* tx[MAX_ROW];
 
     int play_row_nr;
     int play_pattern_nr;
-    NOTE* note;
 
     if(argc > 1)
         filename = argv[1];
@@ -312,8 +309,7 @@ void GetStringFromPatterLine(char* output_str, int pattern_nr, int pattern_row_n
              /// NOTE and Octave output
              if(note->note_number < 12)
              {
-                 sprintf(str1,"%s%d ",NOTE_STRING[note->note_number],(int)note->oktave_number);
-                 strcat(output_str,str1);
+                 strcat(output_str,mod->GetNoteString(note->note_number,note->oktave_number));
              }
              else
              {

@@ -28,15 +28,10 @@ using namespace std;
 #define PAL
 //#define NTSC
 
-
 enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _CH, _NST};
 
 static const int  CHANNEL_PAN[32] = {0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0};   // 0=links, 1=rechts
 static const int  CHANNEL_PAN_INV[32] = {1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1,0,0,1};   // 0=links, 1=rechts
-
-// C-C#-D-D#-E-F-F#-G-G#-A-A#-H
-
-static const char* NOTE_STRING[12] = {"C-","C#","D-","D#","E-","F-","F#","G-","G#","A-","A#","B-"};
 
 static const unsigned short PERIOD_TABLE[16][60] = {                        // thanks ByteRaver for this table ;)
    {1712, 1616, 1524, 1440, 1356, 1280, 1208, 1140, 1076, 1016, 960 , 906,  // Finetune +0
@@ -286,6 +281,8 @@ public:
 
     NOTE* GetPatternRow(int pattern_nr, int pattern_row_nr);
 
+    char *GetNoteString(int note_nr, int octave_nr);
+
 private:
     ///
     /// \brief MODRead - reading a modfile
@@ -358,6 +355,7 @@ private:
     int     set_song_speed_var;
 
     // For Extern Visuals
+    char    note_out_str[5];
     float   volume_visual_counter_value;
 };
 

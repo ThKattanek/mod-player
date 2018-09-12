@@ -12,6 +12,9 @@
 
 #include "mod_class.h"
 
+// C-C#-D-D#-E-F-F#-G-G#-A-A#-H
+static const char* NOTE_STRING[12] = {"C-","C#","D-","D#","E-","F-","F#","G-","G#","A-","A#","B-"};
+
 MODClass::MODClass(const char *filename, int samplerate)
 {
     this->samplerate = samplerate;
@@ -873,4 +876,14 @@ NOTE *MODClass::GetPatternRow(int pattern_nr, int pattern_row_nr)
     }
     else
         return NULL;
+}
+
+char *MODClass::GetNoteString(int note_nr, int octave_nr)
+{
+    if((note_nr >= 0) && (note_nr < 12))
+    {
+        sprintf(note_out_str,"%s%d ",NOTE_STRING[note_nr],octave_nr);
+        return (char*)note_out_str;
+    }
+    return NULL;
 }
