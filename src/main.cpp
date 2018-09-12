@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
 
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
 
+    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2" );
+
     SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
     SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
@@ -142,7 +144,7 @@ int main(int argc, char *argv[])
 
                 SDL_Surface* sf = TTF_RenderText_Blended(font1,str1,color_fg);
                 tx[i] = SDL_CreateTextureFromSurface(ren, sf);
-                SDL_SetTextureBlendMode(tx[0], SDL_BLENDMODE_BLEND);
+                //SDL_SetTextureBlendMode(tx[i], SDL_BLENDMODE_BLEND);
                 SDL_FreeSurface(sf);
             }
         }
