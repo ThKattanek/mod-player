@@ -28,7 +28,7 @@ MODClass::MODClass(const char *filename, int samplerate)
     ChangePatternRow = false;
     ChangePatternRowNr = 0;
 
-    channel_pan = 0.3;
+    channel_pan = 0.5;
     channels = NULL;
 
     for(int i=0; i<MAX_PATTERN;i++)

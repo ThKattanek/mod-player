@@ -46,7 +46,7 @@ LevelMeterClass::LevelMeterClass(SDL_Renderer *ren, int w, int h)
     {
         rect.y = i;
         g = i*(1.0/(h/2));
-        color1 = 0xff000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
+        color1 = 0xE0000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
         SDL_FillRect(surface,&rect,color1);
     }
 
@@ -54,7 +54,7 @@ LevelMeterClass::LevelMeterClass(SDL_Renderer *ren, int w, int h)
     {
         rect.y = i+h/2;
         r = (h/2-i)*(1.0/(h/2));
-        color1 = 0xff000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
+        color1 = 0xE0000000 | (unsigned char)(r*255) | (unsigned char)(g*255)<<8 | (unsigned char)(b*255)<<16;
         SDL_FillRect(surface,&rect,color1);
     }
 
