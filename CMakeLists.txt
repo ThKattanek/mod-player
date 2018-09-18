@@ -210,7 +210,8 @@ if(WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 
     # Install all Datas
-    # install(FILES "data/mod-player.png" DESTINATION ./data)
+    install(FILES "fonts/mononoki-Regular.ttf" DESTINATION ./)
+    install(FILES "mods/mentald2.mod" DESTINATION ./)
 
     # Sonstiges
     install(FILES "LICENSE" DESTINATION ./)

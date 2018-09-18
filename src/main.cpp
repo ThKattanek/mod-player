@@ -39,8 +39,8 @@ MODClass* mod = NULL;
 #undef main
 int main(int argc, char *argv[])
 {
-    int screensize_w = 376;
-    int screensize_h = 300;
+    int screensize_w;
+    int screensize_h;
 
     int font_w, font_h;
 
