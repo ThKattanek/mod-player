@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
     SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
-    LevelMeterClass level_meter(ren,font_w,120);
+    LevelMeterClass level_meter(ren,font_w+2,120);
 
     SDL_Color color_fg = {0,50,150,0};
     //SDL_Color color_fg = {255,255,255,0};
@@ -206,8 +206,6 @@ int main(int argc, char *argv[])
         //SDL_SetRenderDrawColor(ren,0,0,0,0);
         SDL_RenderClear(ren);
 
-        SDL_SetRenderDrawColor(ren,200,0,0,0);
-
         int w, h;
         SDL_QueryTexture(tx[0], NULL, NULL, &w, &h);
         SDL_Rect rec1;
@@ -228,8 +226,17 @@ int main(int argc, char *argv[])
             rec2.y += font_h;
         }
 
-        int y = screensize_h / 2-font_h / 2;
+        // VLines
+        SDL_SetRenderDrawColor(ren,200,200,200,0);
+        for(int i=0; i<mod->GetModChannelCount()+1; i++)
+        {
+            int x = font_w * 3 + i*font_w * 12;
+            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
+        }
 
+        // HLines
+        SDL_SetRenderDrawColor(ren,200,0,0,0);
+        int y = screensize_h / 2-font_h / 2;
         SDL_RenderDrawLine(ren,0,y,screensize_w,y);
         SDL_RenderDrawLine(ren,0,y+font_h,screensize_w,y+font_h);
 
@@ -237,7 +244,7 @@ int main(int argc, char *argv[])
         for(int i=0; i<mod->GetModChannelCount(); i++)
         {
             float vol = mod->GetChannelVolumeVisualValue(i);
-            level_meter.Draw(3*font_w+1 + i*12*font_w, screensize_h/2-font_h/2, vol);
+            level_meter.Draw(3*font_w+2 + i*12*font_w, screensize_h/2-font_h/2, vol);
         }
 
         // Wieder auf Bildschirm rendern
