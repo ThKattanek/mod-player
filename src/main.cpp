@@ -1,3 +1,15 @@
+//////////////////////////////////////////////////
+//                                              //
+// ModPlayer                                    //
+// by Thorsten Kattanek                         //
+//                                              //
+// #file: main.cpp                              //
+//                                              //
+// last change: 09-18-2018                      //
+// https://github.com/ThKattanek/mod-player     //
+//                                              //
+//////////////////////////////////////////////////
+
 #include <iostream>
 #include <iomanip>
 #include <math.h>
@@ -12,7 +24,6 @@ using namespace std;
 #define AudioSampleRate 44100
 
 #define FONT_FILENAME "mononoki-Regular.ttf"
-#define FONT_HEIGHT 12
 
 #ifdef _WIN32
     #define AudioPufferSize (882*1)    // 882 bei 44.100 Khz
@@ -28,8 +39,10 @@ MODClass* mod = NULL;
 #undef main
 int main(int argc, char *argv[])
 {
-    int screensize_w = 370;
+    int screensize_w = 376;
     int screensize_h = 300;
+
+    int font_w, font_h;
 
     char* filename;
 
@@ -60,13 +73,6 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
-
-    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2" );
-
-    SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
-    SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
     if (TTF_Init() < 0)
     {
@@ -75,7 +81,21 @@ int main(int argc, char *argv[])
         return(0);
     }
 
-    font1 = TTF_OpenFont(FONT_FILENAME,FONT_HEIGHT);
+    int FONT_H = 6;
+
+    if(mod->GetModChannelCount() < 9)
+    {
+        FONT_H = 16;
+    }else if(mod->GetModChannelCount() < 17)
+    {
+        FONT_H = 12;
+    }
+    else if(mod->GetModChannelCount() < 33)
+        {
+            FONT_H = 8;
+        }
+
+    font1 = TTF_OpenFont(FONT_FILENAME,FONT_H);
     if(font1 == NULL)
     {
         cerr << "Error: TTF not open font." << endl;
@@ -83,21 +103,24 @@ int main(int argc, char *argv[])
         return(0);
     }
     TTF_SetFontHinting (font1, 1);
+    TTF_SizeText(font1, "12345678", &font_w, &font_h);
+    font_w /= 8;
+    font_h = FONT_H;
 
-    // Find Font Dimensions
-    SDL_Color color{0,0,0,0};
-    SDL_Surface* surface = TTF_RenderText_Blended(font1,"1234567890",color);
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(ren, surface);
+    screensize_w = (4+12*mod->GetModChannelCount()) * font_w;
+    screensize_h = 30 * font_h;
 
-    SDL_DestroyTexture(texture);
-    SDL_FreeSurface(surface);
+    SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
+    SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2" );
 
+    SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
+    SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
+    LevelMeterClass level_meter(ren,font_w,120);
 
-    LevelMeterClass level_meter(ren,12,120);
-
-    //SDL_Color color_fg = {0,50,150,0};
-    SDL_Color color_fg = {255,255,255,0};
+    SDL_Color color_fg = {0,50,150,0};
+    //SDL_Color color_fg = {255,255,255,0};
 
     /// SLD Audio Installieren ///
     SDL_AudioSpec want,have;
@@ -179,8 +202,8 @@ int main(int argc, char *argv[])
         // Alles folgende Rendern in Textur - tex
         SDL_SetRenderTarget(ren,tex);
 
-        //SDL_SetRenderDrawColor(ren,130,130,200,0);
-        SDL_SetRenderDrawColor(ren,0,0,0,0);
+        SDL_SetRenderDrawColor(ren,130,130,200,0);
+        //SDL_SetRenderDrawColor(ren,0,0,0,0);
         SDL_RenderClear(ren);
 
         SDL_SetRenderDrawColor(ren,200,0,0,0);
@@ -196,26 +219,25 @@ int main(int argc, char *argv[])
         SDL_Rect rec2 = rec1;
 
         rec2.x =5;
-        rec2.y = screensize_h / 2 - FONT_HEIGHT / 2;
-        rec2.y -= play_row_nr * FONT_HEIGHT;
+        rec2.y = screensize_h / 2 - font_h / 2;
+        rec2.y -= play_row_nr * font_h;
 
         for(int i=0; i<MAX_ROW; i++)
         {
             SDL_RenderCopy(ren,tx[i],&rec1,&rec2);
-            rec2.y += FONT_HEIGHT;
+            rec2.y += font_h;
         }
 
-        int y = screensize_h / 2-FONT_HEIGHT / 2;
+        int y = screensize_h / 2-font_h / 2;
 
         SDL_RenderDrawLine(ren,0,y,screensize_w,y);
-        SDL_RenderDrawLine(ren,0,y+FONT_HEIGHT,screensize_w,y+FONT_HEIGHT);
+        SDL_RenderDrawLine(ren,0,y+font_h,screensize_w,y+font_h);
 
         // Volume Visible
         for(int i=0; i<mod->GetModChannelCount(); i++)
         {
             float vol = mod->GetChannelVolumeVisualValue(i);
-            level_meter.Draw(i*84+38, screensize_h/2-FONT_HEIGHT/2, vol);
-            //level_meter.Draw(i*60+38, screensize_h/2-FONT_HEIGHT/2, vol);
+            level_meter.Draw(3*font_w+1 + i*12*font_w, screensize_h/2-font_h/2, vol);
         }
 
         // Wieder auf Bildschirm rendern
