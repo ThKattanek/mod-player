@@ -218,7 +218,7 @@ int main(int argc, char *argv[])
         rec2.x =5;
         rec2.y = screensize_h / 2 - font_h / 2;
         rec2.y -= play_row_nr * font_h;
-        rec2.y -= int (mod->GetAktPatternProgress() * font_h);
+        rec2.y -= int (mod->GetAktPatternProgress() * (font_h));
 
         for(int i=0; i<MAX_ROW; i++)
         {
