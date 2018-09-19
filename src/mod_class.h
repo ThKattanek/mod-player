@@ -20,6 +20,7 @@ using namespace std;
 
 
 // Configure
+#define MAX_CHANNELS 64
 #define MAX_PATTERN 128
 #define MAX_ROW 64
 
@@ -285,6 +286,8 @@ public:
 
     float GetAktPatternProgress();
 
+    void SetScopeBuffer(float* buffer);
+
 private:
     ///
     /// \brief MODRead - reading a modfile
@@ -360,7 +363,10 @@ private:
     char    note_out_str[5];
     float   volume_visual_counter_value;
     float   akt_pattern_line_progress;  // 0.0f = 0% 1.0f = 100%
-    float   akt_pattern_line_progress_add;
+    float   akt_pattern_line_progress_add;   
+    float   scope_enable;       // true wenn der
+    float*  scope_buffer;       // Samplesanordnung bei eienem 4 ChannelMod -> 0,1,2,3,0,1,2,3,0,1,2,3 ...
+    int     scope_buffer_pos;   //
 };
 
 #endif // MODCLASS_H

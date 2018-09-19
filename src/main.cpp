@@ -26,9 +26,9 @@ using namespace std;
 #define FONT_FILENAME "mononoki-Regular.ttf"
 
 #ifdef _WIN32
-    #define AudioPufferSize (882*1)    // 882 bei 44.100 Khz
+#define AUDIO_BUFFER_SIZE (882*1)    // 882 bei 44.100 Khz
 #else
-    #define AudioPufferSize (882*2)    // 882 bei 44.100 Khz
+    #define AUDIO_BUFFER_SIZE (882*2)    // 882 bei 44.100 Khz
 #endif
 
 void AudioMix(void* userdat, Uint8 *stream, int length);
@@ -51,6 +51,8 @@ int main(int argc, char *argv[])
 
     SDL_Texture* tx[MAX_ROW];
 
+    float* scope_buffer;
+
     for(int i=0; i<MAX_ROW; i++)
         tx[i] = NULL;
 
@@ -72,6 +74,12 @@ int main(int argc, char *argv[])
             cerr << "Mod cannot loaded." << endl;
         return(0);
     }
+
+    // Scopes
+    scope_buffer = new float[MAX_CHANNELS * AUDIO_BUFFER_SIZE];
+    for(int i=0; i<MAX_CHANNELS * AUDIO_BUFFER_SIZE; i++) scope_buffer[i] = 0.0;
+
+    mod->SetScopeBuffer(scope_buffer);
 
     if (TTF_Init() < 0)
     {
@@ -127,7 +135,7 @@ int main(int argc, char *argv[])
     want.freq = AudioSampleRate;
     want.format = AUDIO_S16;
     want.channels = 2;
-    want.samples = AudioPufferSize;
+    want.samples = AUDIO_BUFFER_SIZE;
     want.callback = AudioMix;
     want.userdata = NULL;
 
@@ -226,14 +234,6 @@ int main(int argc, char *argv[])
             rec2.y += font_h;
         }
 
-        // VLines
-        SDL_SetRenderDrawColor(ren,200,200,200,0);
-        for(int i=0; i<mod->GetModChannelCount()+1; i++)
-        {
-            int x = font_w * 3 + i*font_w * 12;
-            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
-        }
-
         // HLines
         SDL_SetRenderDrawColor(ren,200,0,0,0);
         int y = screensize_h / 2-font_h / 2;
@@ -247,6 +247,49 @@ int main(int argc, char *argv[])
             level_meter.Draw(3*font_w+2 + i*12*font_w, screensize_h/2-font_h/2, vol);
         }
 
+        // Scope Background
+        rec1.x = rec1.y = 0;
+        rec1.w = screensize_w;
+        rec1.h = 80;
+
+        SDL_SetRenderDrawColor(ren,60,60,60,0);
+        //SDL_RenderFillRect(ren,&rec1);
+
+        // VLines
+        SDL_SetRenderDrawColor(ren,200,200,200,0);
+        for(int i=0; i<mod->GetModChannelCount()+1; i++)
+        {
+            int x = font_w * 3 + i*font_w * 12;
+            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
+        }
+
+        // Scopes
+        int channels = mod->GetModChannelCount();
+        int scope_y = 60;
+
+        int scope_x1[channels];
+        int scope_y1[channels];
+        int scope_x2[channels];
+        int scope_y2[channels];
+
+        for(int i=0; i<channels; i++)
+        {
+            scope_x1[i] = scope_x2[i] = 0;
+            scope_y1[i] = scope_y * i;
+        }
+
+        SDL_SetRenderDrawColor(ren,255,255,255,0);
+        for(int i=0; i<AUDIO_BUFFER_SIZE * channels; i++)
+        {
+            int chn = i % channels;
+
+            scope_x2[chn]++;
+            scope_y2[chn] = scope_buffer[i] * 60 + scope_y*(chn+1);
+            SDL_RenderDrawLine(ren,scope_x1[chn],scope_y1[chn],scope_x2[chn],scope_y2[chn]);
+            scope_x1[chn] = scope_x2[chn];
+            scope_y1[chn] = scope_y2[chn];
+        }
+
         // Wieder auf Bildschirm rendern
         SDL_SetRenderTarget(ren, NULL);
 
@@ -258,10 +301,13 @@ int main(int argc, char *argv[])
         SDL_RenderPresent(ren);
 
         // if not VSYNC then
-        //SDL_Delay(1);
+        // SDL_Delay(1);
     }
 
+    SDL_PauseAudio(1);
+
     delete mod;
+    delete[] scope_buffer;
 
     TTF_CloseFont(font1);
 
@@ -269,7 +315,6 @@ int main(int argc, char *argv[])
     {
         SDL_DestroyTexture(tx[i]);
     }
-
 
     TTF_Quit();
     SDL_Quit();

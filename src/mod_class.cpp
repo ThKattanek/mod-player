@@ -28,6 +28,9 @@ MODClass::MODClass(const char *filename, int samplerate)
     ChangePatternRow = false;
     ChangePatternRowNr = 0;
 
+    scope_enable = false;
+    scope_buffer = NULL;
+
     channel_pan = 0.5;
     channels = NULL;
 
@@ -136,6 +139,8 @@ float MODClass::GetChannelVolumeVisualValue(int channel_nr)
 
 void MODClass::FillAudioBuffer(signed short *stream, int length)
 {
+    scope_buffer_pos = 0;
+
     if(mod_is_playing)
     {
         for(int i=0; i<length; i+=2)
@@ -705,6 +710,11 @@ void MODClass::CalcNextSamples(signed short *samples)
                 {
                     samples[cp] += sample_data[channels[i].sample_pos] * channels[i].volume;
                     samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
+                    if(scope_enable)
+                    {
+                        scope_buffer[scope_buffer_pos] = (sample_data[channels[i].sample_pos] * channels[i].volume) / 255;
+                        scope_buffer_pos++;
+                    }
                 }
 
                 channels[i].frequ_counter -= 1.0;
@@ -729,6 +739,14 @@ void MODClass::CalcNextSamples(signed short *samples)
                         }
                     }
                 }
+            }
+        }
+        else
+        {
+            if(scope_enable)
+            {
+                scope_buffer[scope_buffer_pos] = 0.0;
+                scope_buffer_pos++;
             }
         }
     }
@@ -897,4 +915,13 @@ char *MODClass::GetNoteString(int note_nr, int octave_nr)
 float MODClass::GetAktPatternProgress()
 {
     return akt_pattern_line_progress;
+}
+
+void MODClass::SetScopeBuffer(float *buffer)
+{
+    if(buffer != NULL)
+    {
+        scope_buffer = buffer;
+        scope_enable = true;
+    }
 }
