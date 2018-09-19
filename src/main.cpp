@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
         for(int i=0; i<channels; i++)
         {
             scope_x1[i] = scope_x2[i] = 0;
-            scope_y1[i] = scope_y * i;
+            scope_y1[i] = scope_y * (i+1);
         }
 
         SDL_SetRenderDrawColor(ren,255,255,255,0);
