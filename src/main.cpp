@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 09-18-2018                      //
+// last change: 09-19-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
             cerr << "Mod cannot loaded." << endl;
         return(0);
     }
-
 
     if (TTF_Init() < 0)
     {
@@ -219,6 +218,7 @@ int main(int argc, char *argv[])
         rec2.x =5;
         rec2.y = screensize_h / 2 - font_h / 2;
         rec2.y -= play_row_nr * font_h;
+        rec2.y -= int (mod->GetAktPatternProgress() * font_h);
 
         for(int i=0; i<MAX_ROW; i++)
         {

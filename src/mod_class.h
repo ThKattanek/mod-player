@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-08-2018                      //
+// last change: 09-19-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -283,6 +283,8 @@ public:
 
     char *GetNoteString(int note_nr, int octave_nr);
 
+    float GetAktPatternProgress();
+
 private:
     ///
     /// \brief MODRead - reading a modfile
@@ -357,6 +359,8 @@ private:
     // For Extern Visuals
     char    note_out_str[5];
     float   volume_visual_counter_value;
+    float   akt_pattern_line_progress;  // 0.0f = 0% 1.0f = 100%
+    float   akt_pattern_line_progress_add;
 };
 
 #endif // MODCLASS_H

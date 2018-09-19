@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-08-2018                      //
+// last change: 09-19-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -37,6 +37,7 @@ MODClass::MODClass(const char *filename, int samplerate)
     }
 
     volume_visual_counter_value = (1.0 / FPS) / VOLUME_VISUAL_DOWN_TIME;
+    akt_pattern_line_progress = 0.0f;
 
     ModRead(filename);
 }
@@ -140,14 +141,19 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
         for(int i=0; i<length; i+=2)
         {
             time_counter--;
+            akt_pattern_line_progress += akt_pattern_line_progress_add;
+
             if(time_counter == 0)
             {
                 time_counter = time_counter_start;
                 thick_counter--;
                 if(thick_counter == 0)
                 {
-                    thick_counter = thick_counter_start;
                     NextLine();
+
+                    thick_counter = thick_counter_start;
+                    akt_pattern_line_progress = 0.0;
+                    akt_pattern_line_progress_add = 1.0 / (time_counter_start * thick_counter_start);
                 }
                 CalcNextThick();
             }
@@ -886,4 +892,9 @@ char *MODClass::GetNoteString(int note_nr, int octave_nr)
         return (char*)note_out_str;
     }
     return NULL;
+}
+
+float MODClass::GetAktPatternProgress()
+{
+    return akt_pattern_line_progress;
 }
