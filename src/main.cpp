@@ -92,17 +92,27 @@ int main(int argc, char *argv[])
 
     if(mod->GetModChannelCount() < 9)
     {
-        FONT_H = 16;
+        FONT_H = 20;
     }else if(mod->GetModChannelCount() < 17)
     {
-        FONT_H = 12;
+        FONT_H = 16;
     }
     else if(mod->GetModChannelCount() < 33)
         {
-            FONT_H = 8;
+            FONT_H = 10;
         }
 
-    font1 = TTF_OpenFont(FONT_FILENAME,FONT_H);
+   char font_filename[1024];
+#ifdef _WIN32
+   sprintf(font_filename,"%s%s",DATA_PATH,FONT_FILENAME);
+#endif
+
+#ifdef __linux__
+    sprintf(font_filename,"%s%s",DATA_PATH,FONT_FILENAME);
+#endif
+
+
+    font1 = TTF_OpenFont(font_filename,FONT_H);
     if(font1 == NULL)
     {
         cerr << "Error: TTF not open font." << endl;

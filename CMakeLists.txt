@@ -197,9 +197,9 @@ endif()
 
 # Set DataPath
 if(WIN32)
-    add_definitions("-DDATA_PATH=\"./data/\"")
+    add_definitions("-DDATA_PATH=\"./\"")
 else()
-    add_definitions("-DDATA_PATH=\"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/data/\"")
+    add_definitions("-DDATA_PATH=\"${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/\"")
 endif()
 
 ############ Install Binary und Daten #############
@@ -222,7 +222,7 @@ else()
     install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
     # Install all Datas
-    # install(FILES "data/sprite.png" DESTINATION share/${PROJECT_NAME}/data)
+    install(FILES "fonts/mononoki-Regular.ttf" DESTINATION share/${PROJECT_NAME})
 
     # Install Startmenü Eintrag
     # install(FILES "src/${PROJECT_NAME}.desktop" DESTINATION share/applications)
