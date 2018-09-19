@@ -262,8 +262,8 @@ int main(int argc, char *argv[])
         rec1.w = screensize_w;
         rec1.h = 80;
 
-        SDL_SetRenderDrawColor(ren,60,60,60,0);
-        //SDL_RenderFillRect(ren,&rec1);
+        SDL_SetRenderDrawColor(ren,0,0,50,0);
+        SDL_RenderFillRect(ren,&rec1);
 
         // VLines
         SDL_SetRenderDrawColor(ren,200,200,200,0);
@@ -274,8 +274,10 @@ int main(int argc, char *argv[])
         }
 
         // Scopes
+
         int channels = mod->GetModChannelCount();
-        int scope_y = 60;
+        int scope_w = font_w * 12 - 2;
+        int scope_y = 40;
 
         int scope_x1[channels];
         int scope_y1[channels];
@@ -284,20 +286,26 @@ int main(int argc, char *argv[])
 
         for(int i=0; i<channels; i++)
         {
-            scope_x1[i] = scope_x2[i] = 0;
-            scope_y1[i] = scope_y * (i+1);
+            scope_x1[i] = scope_x2[i] = i * font_w * 12 + font_w * 3 + 1;
+            scope_y1[i] = scope_y;
         }
 
-        SDL_SetRenderDrawColor(ren,255,255,255,0);
-        for(int i=0; i<AUDIO_BUFFER_SIZE * channels; i++)
-        {
-            int chn = i % channels;
+        SDL_SetRenderDrawColor(ren,130,130,130,0);
 
-            scope_x2[chn]++;
-            scope_y2[chn] = scope_buffer[i] * 60 + scope_y*(chn+1);
-            SDL_RenderDrawLine(ren,scope_x1[chn],scope_y1[chn],scope_x2[chn],scope_y2[chn]);
-            scope_x1[chn] = scope_x2[chn];
-            scope_y1[chn] = scope_y2[chn];
+        float t1 = 1.0 / scope_w;
+
+        for(int x=0; x<scope_w; x++)
+        {
+            int idx = int(t1 * x * AUDIO_BUFFER_SIZE) * channels;
+            for(int chn=0; chn < channels; chn++)
+            {
+                scope_x2[chn]++;
+                scope_y2[chn] = scope_buffer[idx] * 60 + scope_y ;
+                SDL_RenderDrawLine(ren,scope_x1[chn],scope_y1[chn],scope_x2[chn],scope_y2[chn]);
+                scope_x1[chn] = scope_x2[chn];
+                scope_y1[chn] = scope_y2[chn];
+                idx++;
+            }
         }
 
         // Wieder auf Bildschirm rendern
