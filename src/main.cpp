@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
     SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
-    LevelMeterClass level_meter(ren,font_w+2,120);
+    LevelMeterClass level_meter(ren,font_w+2,font_h * 6);
 
     SDL_Color color_fg = {0,50,150,0};
     //SDL_Color color_fg = {255,255,255,0};
@@ -257,12 +257,12 @@ int main(int argc, char *argv[])
             level_meter.Draw(3*font_w+2 + i*12*font_w, screensize_h/2-font_h/2, vol);
         }
 
-        // Scope Background
+        // Scope Background and size
         rec1.x = rec1.y = 0;
         rec1.w = screensize_w;
-        rec1.h = 80;
+        rec1.h = font_h * 3;
 
-        SDL_SetRenderDrawColor(ren,0,0,50,0);
+        SDL_SetRenderDrawColor(ren,80,80,80,0);
         SDL_RenderFillRect(ren,&rec1);
 
         // VLines
@@ -272,12 +272,15 @@ int main(int argc, char *argv[])
             int x = font_w * 3 + i*font_w * 12;
             SDL_RenderDrawLine(ren,x,0,x,screensize_h);
         }
+        // HLINE
+        SDL_RenderDrawLine(ren,0,rec1.h,screensize_w,rec1.h);
 
         // Scopes
 
         int channels = mod->GetModChannelCount();
         int scope_w = font_w * 12 - 2;
-        int scope_y = 40;
+        int scope_h = rec1.h * 0.8;
+        int scope_y = scope_h / 2;
 
         int scope_x1[channels];
         int scope_y1[channels];
@@ -290,7 +293,7 @@ int main(int argc, char *argv[])
             scope_y1[i] = scope_y;
         }
 
-        SDL_SetRenderDrawColor(ren,130,130,130,0);
+        SDL_SetRenderDrawColor(ren,180,180,180,0);
 
         float t1 = 1.0 / scope_w;
 
@@ -300,7 +303,7 @@ int main(int argc, char *argv[])
             for(int chn=0; chn < channels; chn++)
             {
                 scope_x2[chn]++;
-                scope_y2[chn] = scope_buffer[idx] * 60 + scope_y ;
+                scope_y2[chn] = scope_buffer[idx] * scope_h + scope_y ;
                 SDL_RenderDrawLine(ren,scope_x1[chn],scope_y1[chn],scope_x2[chn],scope_y2[chn]);
                 scope_x1[chn] = scope_x2[chn];
                 scope_y1[chn] = scope_y2[chn];
