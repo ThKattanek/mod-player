@@ -9,6 +9,9 @@
 * SDL2
 * SDL2_ttf
 
+## Used fonts by Marcus Hoffren
+https://github.com/rewtnull/amigafonts
+
 ## Build
 ```bash
 git clone https://github.com/ThKattanek/mod-player.git
