@@ -31,6 +31,7 @@ using namespace std;
     #define AUDIO_BUFFER_SIZE (882*2)    // 882 bei 44.100 Khz
 #endif
 
+void CutBackwartString(char* str, char c);
 void AudioMix(void* userdat, Uint8 *stream, int length);
 void GetStringFromPatterLine(char *output_str, int pattern_nr, int pattern_row_nr);
 
@@ -39,6 +40,14 @@ MODClass* mod = NULL;
 #undef main
 int main(int argc, char *argv[])
 {
+    char* AppPath;
+    if(argv[0] != NULL)
+    {
+        AppPath = new char[strlen(argv[0]) + 1];
+        strcpy(AppPath,argv[0]);
+        CutBackwartString(AppPath,'\\');
+    }
+
     int screensize_w;
     int screensize_h;
 
@@ -104,7 +113,7 @@ int main(int argc, char *argv[])
 
    char font_filename[1024];
 #ifdef _WIN32
-   sprintf(font_filename,"%s%s",DATA_PATH,FONT_FILENAME);
+   sprintf(font_filename,"%s%s",AppPath,FONT_FILENAME);
 #endif
 
 #ifdef __linux__
@@ -340,6 +349,27 @@ int main(int argc, char *argv[])
     TTF_Quit();
     SDL_Quit();
     return 0;
+}
+
+void CutBackwartString(char* str, char c)
+{
+    if(str != NULL)
+    {
+        int len = strlen(str);
+        int i=len;
+        while(i>-1)
+        {
+            if(str[i] == c)
+            {
+
+                break;
+            }
+            i--;
+        }
+
+        if(i>0 && (i+1) < len)
+            str[i+1] = 0;
+    }
 }
 
 void AudioMix(void* userdat, Uint8 *stream, int length)
