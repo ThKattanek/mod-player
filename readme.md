@@ -2,6 +2,9 @@
 ## This is a MOD Player for *.mod file with 4/6 and 8 sound channels.
 ### [Latest version here](https://github.com/ThKattanek/mod-player/releases/latest)
 
+
+### [For many mods -- The Mod Archive](https://modarchive.org)
+
 ## Screenshot
 ![Screenshot](screenshot.png)
 
