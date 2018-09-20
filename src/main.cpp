@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 09-19-2018                      //
+// last change: 09-20-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -58,6 +58,9 @@ int main(int argc, char *argv[])
     TTF_Font* font1;
     char str1[1024];
 
+    SDL_Surface* sf_tmp;
+
+    SDL_Texture* tx_mute;
     SDL_Texture* tx[MAX_ROW];
 
     float* scope_buffer;
@@ -139,14 +142,22 @@ int main(int argc, char *argv[])
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
     SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2" );
 
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
     SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
     SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
+    // for mute visusals
+    SDL_Color color_mute = {220,0,0,0}; // RED
+    sf_tmp = TTF_RenderText_Blended(font1,"x",color_mute);
+    tx_mute = SDL_CreateTextureFromSurface(ren, sf_tmp);
+    SDL_FreeSurface(sf_tmp);
+
     LevelMeterClass level_meter(ren,font_w+2,font_h * 6);
 
     SDL_Color color_fg = {0,50,150,0};
-    //SDL_Color color_fg = {255,255,255,0};
 
     /// SLD Audio Installieren ///
     SDL_AudioSpec want,have;
@@ -185,6 +196,19 @@ int main(int argc, char *argv[])
             if (event.type == SDL_KEYUP){
                 switch(event.key.keysym.sym)
                 {
+                case SDLK_0:
+                    if(mod->GetChannelMute(9))
+                        mod->SetChannelMute(9,false);
+                    else mod->SetChannelMute(9,true);
+                    break;
+
+                case SDLK_1: case SDLK_2: case SDLK_3: case SDLK_4: case SDLK_5: case SDLK_6: case SDLK_7: case SDLK_8: case SDLK_9:
+                    if(mod->GetChannelMute(event.key.keysym.sym - SDLK_1))
+                        mod->SetChannelMute(event.key.keysym.sym - SDLK_1,false);
+                    else mod->SetChannelMute(event.key.keysym.sym - SDLK_1,true);
+                    break;
+
+
                 case SDLK_PLUS:
                     break;
 
@@ -213,9 +237,9 @@ int main(int argc, char *argv[])
                 if(tx[i] != NULL)
                     SDL_DestroyTexture(tx[i]);
 
-                SDL_Surface* sf = TTF_RenderText_Blended(font1,str1,color_fg);
-                tx[i] = SDL_CreateTextureFromSurface(ren, sf);
-                SDL_FreeSurface(sf);
+                sf_tmp = TTF_RenderText_Blended(font1,str1,color_fg);
+                tx[i] = SDL_CreateTextureFromSurface(ren, sf_tmp);
+                SDL_FreeSurface(sf_tmp);
             }
         }
 
@@ -227,9 +251,9 @@ int main(int argc, char *argv[])
 
         // Alles folgende Rendern in Textur - tex
         SDL_SetRenderTarget(ren,tex);
+        SDL_SetRenderDrawBlendMode(ren, SDL_BLENDMODE_BLEND);
 
-        SDL_SetRenderDrawColor(ren,130,130,200,0);
-        //SDL_SetRenderDrawColor(ren,0,0,0,0);
+        SDL_SetRenderDrawColor(ren,130,130,200,255);
         SDL_RenderClear(ren);
 
         int w, h;
@@ -254,7 +278,7 @@ int main(int argc, char *argv[])
         }
 
         // HLines
-        SDL_SetRenderDrawColor(ren,200,0,0,0);
+        SDL_SetRenderDrawColor(ren,200,0,0,255);
         int y = screensize_h / 2-font_h / 2;
         SDL_RenderDrawLine(ren,0,y,screensize_w,y);
         SDL_RenderDrawLine(ren,0,y+font_h,screensize_w,y+font_h);
@@ -271,11 +295,11 @@ int main(int argc, char *argv[])
         rec1.w = screensize_w;
         rec1.h = font_h * 3;
 
-        SDL_SetRenderDrawColor(ren,80,80,80,0);
+        SDL_SetRenderDrawColor(ren,80,80,80,210);
         SDL_RenderFillRect(ren,&rec1);
 
         // VLines
-        SDL_SetRenderDrawColor(ren,200,200,200,0);
+        SDL_SetRenderDrawColor(ren,200,200,200,255);
         for(int i=0; i<mod->GetModChannelCount()+1; i++)
         {
             int x = font_w * 3 + i*font_w * 12;
@@ -302,7 +326,7 @@ int main(int argc, char *argv[])
             scope_y1[i] = scope_y;
         }
 
-        SDL_SetRenderDrawColor(ren,180,180,180,0);
+        SDL_SetRenderDrawColor(ren,180,180,180,255);
 
         float t1 = 1.0 / scope_w;
 
@@ -317,6 +341,21 @@ int main(int argc, char *argv[])
                 scope_x1[chn] = scope_x2[chn];
                 scope_y1[chn] = scope_y2[chn];
                 idx++;
+            }
+        }
+
+        /// Mute
+        SDL_QueryTexture(tx_mute, NULL, NULL, &w, &h);
+        rec1.w = w;
+        rec1.h = h;
+        rec1.y = 0;
+
+        for(int i=0; i<channels; i++)
+        {
+            if(mod->GetChannelMute(i))
+            {
+                rec1.x = i * font_w * 12 + font_w * 4;
+                SDL_RenderCopy(ren, tx_mute,NULL,&rec1);
             }
         }
 
@@ -340,6 +379,8 @@ int main(int argc, char *argv[])
     delete[] scope_buffer;
 
     TTF_CloseFont(font1);
+
+    SDL_DestroyTexture(tx_mute);
 
     for(int i=0; i<MAX_ROW; i++)
     {
