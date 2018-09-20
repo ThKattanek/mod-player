@@ -23,7 +23,7 @@ using namespace std;
 
 #define AudioSampleRate 44100
 
-#define FONT_FILENAME "mononoki-Regular.ttf"
+#define FONT_FILENAME "Topaz_a1200_v1.0.ttf"
 
 #ifdef _WIN32
 #define AUDIO_BUFFER_SIZE (882*1)    // 882 bei 44.100 Khz

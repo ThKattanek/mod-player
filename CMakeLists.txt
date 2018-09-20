@@ -210,7 +210,7 @@ if(WIN32)
     install(TARGETS ${PROJECT_NAME} DESTINATION ./)
 
     # Install all Datas
-    install(FILES "fonts/mononoki-Regular.ttf" DESTINATION ./)
+    install(FILES "fonts/Topaz_a1200_v1.0.ttf" DESTINATION ./)
     install(FILES "mods/mentald2.mod" DESTINATION ./)
 
     # Sonstiges
@@ -222,7 +222,7 @@ else()
     install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
     # Install all Datas
-    install(FILES "fonts/mononoki-Regular.ttf" DESTINATION share/${PROJECT_NAME})
+    install(FILES "fonts/Topaz_a1200_v1.0.ttf" DESTINATION share/${PROJECT_NAME})
 
     # Install Startmenü Eintrag
     # install(FILES "src/${PROJECT_NAME}.desktop" DESTINATION share/applications)
