@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-19-2018                      //
+// last change: 09-20-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -164,6 +164,7 @@ struct CHANNEL
     float   volume = 1.0f;
     int     volume_slide = 0;   // 0=stop, 1=up, 2=down
     int     volume_slide_value = 0;
+    bool    mute = false;
     int     note_position_in_table = 0;
     int     period = 0;
     float   frequ_counter_start = 0.0;
@@ -265,6 +266,20 @@ public:
     /// \return volume as float
     ///
     float GetChannelVolumeVisualValue(int channel_nr);
+
+    ///
+    /// \brief SetChannelMute
+    /// \param channel_nr
+    /// \param enable
+    ///
+    void SetChannelMute(int channel_nr, bool enable);
+
+    ///
+    /// \brief GetChannelMute
+    /// \param channel_nr
+    /// \return
+    ///
+    bool GetChannelMute(int channel_nr);
 
     ///
     /// \brief FillAudioBuffer - Fill the AudioStream (16Bit/Stereo) with audio data

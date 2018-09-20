@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-19-2018                      //
+// last change: 09-20-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -135,6 +135,23 @@ float MODClass::GetChannelVolumeVisualValue(int channel_nr)
         return channels[channel_nr].volume_visual;
     }
     return 0;
+}
+
+void MODClass::SetChannelMute(int channel_nr, bool enable)
+{
+    if(channel_nr < mod_channel_count)
+    {
+        channels[channel_nr].mute = enable;
+    }
+}
+
+bool MODClass::GetChannelMute(int channel_nr)
+{
+    if(channel_nr < mod_channel_count)
+    {
+        return channels[channel_nr].mute;
+    }
+    else return false;
 }
 
 void MODClass::FillAudioBuffer(signed short *stream, int length)
@@ -371,6 +388,10 @@ bool MODClass::ModRead(const char *filename)
     }
 
     file.close();
+
+    for(int i=0; i<mod_channel_count; i++)
+        channels[i].mute = false;
+
     mod_is_loaded = true;
     return true;
 }
@@ -707,6 +728,7 @@ void MODClass::CalcNextSamples(signed short *samples)
             if(sample_data != NULL)
             {
                 //if(i==0)
+                if(!channels[i].mute)
                 {
                     samples[cp] += sample_data[channels[i].sample_pos] * channels[i].volume;
                     samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
@@ -715,6 +737,11 @@ void MODClass::CalcNextSamples(signed short *samples)
                         scope_buffer[scope_buffer_pos] = (sample_data[channels[i].sample_pos] * channels[i].volume) / 255;
                         scope_buffer_pos++;
                     }
+                }
+                else if(scope_enable)
+                {
+                    scope_buffer[scope_buffer_pos] = 0.0;
+                    scope_buffer_pos++;
                 }
 
                 channels[i].frequ_counter -= 1.0;
