@@ -671,6 +671,10 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
                 channels[channel_nr].volume -= ((note->effectdata & 0x0f) / 64.0f);
                 if(channels[channel_nr].volume < 0.0) channels[channel_nr].volume = 0.0;
                 break;
+            case 0x0C:  // Cut Sample
+                channels[channel_nr].cut_sample = true;
+                channels[channel_nr].cut_sample_counter = note->effectdata & 0x0f;
+                break;
             case 0x0E:  // Delay
                 if((note->effectdata & 0x0f) > 1)
                     thick_counter = thick_counter_start * ((note->effectdata & 0x0f)-1);
@@ -848,6 +852,17 @@ void MODClass::CalcNextThick()
         {
             channels[i].volume -= (channels[i].volume_slide_value / 64.0f);
             if(channels[i].volume < 0.0) channels[i].volume = 0.0;
+        }
+
+        // Cut Sample
+        if(channels[i].cut_sample)
+        {
+            channels[i].cut_sample_counter--;
+            if(channels[i].cut_sample_counter == 0)
+            {
+                channels[i].volume = 0.0;
+                channels[i].cut_sample = false;
+            }
         }
 
         // For Extern Visual Effects

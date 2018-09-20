@@ -185,6 +185,8 @@ struct CHANNEL
     int     slide_up_value = 0;
     bool    slide_down = false;
     int     slide_down_value = 0;
+    bool    cut_sample = false;
+    int     cut_sample_counter = 0;
     bool    vibrato = false;
     int     vibrato_speed = 0;
     int     vibrato_depth = 0;
