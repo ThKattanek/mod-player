@@ -86,7 +86,7 @@ void LevelMeterClass::Draw(int x, int y, float value)
 
     if(value > 0)
     {
-        SDL_SetRenderDrawColor(ren,100,100,100,0);
+        SDL_SetRenderDrawColor(ren,100,100,100,255);
         SDL_RenderDrawRect(ren,&dst_rec);
     }
 }
