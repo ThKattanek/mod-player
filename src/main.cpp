@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
         int channels = mod->GetModChannelCount();
         int scope_w = font_w * 12 - 2;
         int scope_h = rec1.h * 0.8;
-        int scope_y = scope_h / 2;
+        int scope_y = rec1.h / 2;
 
         int scope_x1[channels];
         int scope_y1[channels];
