@@ -1,5 +1,5 @@
 # MOD Player with SDL2
-## This is a MOD Player for *.mod file with 4/6 and 8 sound channels.
+## This is a MOD Player for *.mod files with variables counts of sound channels
 ### [Latest version here](https://github.com/ThKattanek/mod-player/releases/latest)
 
 
