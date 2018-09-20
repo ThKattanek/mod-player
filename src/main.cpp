@@ -223,7 +223,7 @@ int main(int argc, char *argv[])
                 }
             }
             if (event.type == SDL_MOUSEBUTTONDOWN){
-               // quit = true;
+                // if push mousebutton
             }
         }
 
