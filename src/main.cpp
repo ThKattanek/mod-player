@@ -295,7 +295,7 @@ int main(int argc, char *argv[])
         rec1.w = screensize_w;
         rec1.h = font_h * 3;
 
-        SDL_SetRenderDrawColor(ren,80,80,80,210);
+        SDL_SetRenderDrawColor(ren,80,80,80,180);
         SDL_RenderFillRect(ren,&rec1);
 
         // VLines
