@@ -334,17 +334,20 @@ int main(int argc, char *argv[])
         int scope_x2[channels];
         int scope_y2[channels];
 
+        int idx = 0;
         for(int i=0; i<channels; i++)
         {
             scope_x1[i] = scope_x2[i] = i * font_w * 12 + font_w * 3 + 1;
-            scope_y1[i] = scope_y;
+
+
+            scope_y1[i] = scope_buffer[idx++] * scope_h + scope_y ;
         }
 
         SDL_SetRenderDrawColor(ren,180,180,180,255);
 
         float t1 = 1.0 / scope_w;
 
-        for(int x=0; x<scope_w; x++)
+        for(int x=1; x<scope_w; x++)
         {
             int idx = int(t1 * x * AUDIO_BUFFER_SIZE) * channels;
             for(int chn=0; chn < channels; chn++)
