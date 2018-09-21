@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
         strcpy(AppPath,argv[0]);
         CutBackwartString(AppPath,'\\');
     }
+    else AppPath = NULL;
 
     int screensize_w;
     int screensize_h;
