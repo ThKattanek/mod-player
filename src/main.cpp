@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 09-20-2018                      //
+// last change: 09-21-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -290,6 +290,23 @@ int main(int argc, char *argv[])
             level_meter.Draw(3*font_w+2 + i*12*font_w, screensize_h/2-font_h/2, vol);
         }
 
+        // VLines
+        SDL_SetRenderDrawColor(ren,200,200,200,255);
+        for(int i=0; i<mod->GetModChannelCount()+1; i++)
+        {
+            int x = font_w * 3 + i*font_w * 12;
+            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
+        }
+
+        SDL_SetRenderDrawColor(ren,200,200,200,70);
+        for(int i=0; i<mod->GetModChannelCount()+1; i++)
+        {
+            int x = font_w * 8 + i*font_w * 12;
+            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
+            x += font_w * 3;
+            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
+        }
+
         // Scope Background and size
         rec1.x = rec1.y = 0;
         rec1.w = screensize_w;
@@ -298,13 +315,9 @@ int main(int argc, char *argv[])
         SDL_SetRenderDrawColor(ren,80,80,80,180);
         SDL_RenderFillRect(ren,&rec1);
 
-        // VLines
-        SDL_SetRenderDrawColor(ren,200,200,200,255);
-        for(int i=0; i<mod->GetModChannelCount()+1; i++)
-        {
-            int x = font_w * 3 + i*font_w * 12;
-            SDL_RenderDrawLine(ren,x,0,x,screensize_h);
-        }
+        SDL_SetRenderDrawColor(ren,0,0,80,255);
+        SDL_RenderDrawLine(ren,0,rec1.h,screensize_w,rec1.h);
+
         // HLINE
         SDL_RenderDrawLine(ren,0,rec1.h,screensize_w,rec1.h);
 
