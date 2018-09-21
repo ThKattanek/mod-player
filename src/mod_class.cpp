@@ -704,10 +704,10 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         break;
     }
 
-    if(note_attack)
+    if(note_attack && !channels[channel_nr].mute)
     {
         //if(channels[channel_nr].volume_visual < channels[channel_nr].volume)
-            channels[channel_nr].volume_visual = channels[channel_nr].volume;
+        channels[channel_nr].volume_visual = channels[channel_nr].volume;
     }
 }
 
