@@ -26,9 +26,9 @@ using namespace std;
 #define FONT_FILENAME "Topaz_a1200_v1.0.ttf"
 
 #ifdef _WIN32
-#define AUDIO_BUFFER_SIZE (882*1)    // 882 bei 44.100 Khz
+#define AUDIO_BUFFER_SIZE (882)    // 882 bei 44.100 Khz
 #else
-    #define AUDIO_BUFFER_SIZE (882*2)    // 882 bei 44.100 Khz
+    #define AUDIO_BUFFER_SIZE (882)    // 882 bei 44.100 Khz
 #endif
 
 void CutBackwartString(char* str, char c);
