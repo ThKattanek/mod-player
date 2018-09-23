@@ -521,7 +521,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         else channels[channel_nr].loop_enable = false;
 
         if(note->effectcommand != 0x03)
+        {
             channels[channel_nr].sample_pos = 2;
+        }
         else
         {
             if(channels[channel_nr].loop_enable)
@@ -615,7 +617,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             else
                 channels[channel_nr].slide_note_direction = 1;  // down
 
-            channels[channel_nr].slide_note_speed = note->effectdata;
+            if(note->effectdata > 0)
+                channels[channel_nr].slide_note_speed = note->effectdata;
+
             channels[channel_nr].slide_note = true;
         }
         break;
