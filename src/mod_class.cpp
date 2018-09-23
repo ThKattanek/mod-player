@@ -884,7 +884,7 @@ void MODClass::CalcNextThick()
             if(thick_counter > 1)
             {
                 channels[i].period -= channels[i].slide_up_value;
-                channels[i].frequ_counter_start = (channels[i].period / 81.0);
+                channels[i].frequ_counter_start = CalcFrequCounterStart(channels[i].period);
             }
         }
 
@@ -894,7 +894,7 @@ void MODClass::CalcNextThick()
             if(thick_counter > 1)
             {
                 channels[i].period += channels[i].slide_down_value;
-                channels[i].frequ_counter_start = (channels[i].period / 81.0);
+                channels[i].frequ_counter_start = CalcFrequCounterStart(channels[i].period);
             }
         }
 
@@ -930,7 +930,7 @@ void MODClass::CalcNextThick()
                 if ((channels[i].vibrato_pos & 63) > 31) vm = -vm;
 
                 channels[i].vibrato_pos += channels[i].vibrato_speed;
-                channels[i].frequ_counter_start = (channels[i].period + vm) / 81.0;
+                channels[i].frequ_counter_start = CalcFrequCounterStart(channels[i].period + vm);
             }
         }
 
