@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-20-2018                      //
+// last change: 09-23-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -18,9 +18,6 @@ static const char* NOTE_STRING[12] = {"C-","C#","D-","D#","E-","F-","F#","G-","G
 MODClass::MODClass(const char *filename, int samplerate)
 {
     this->samplerate = samplerate;
-
-    this->time_counter_start = samplerate / FPS;
-    this->time_counter = time_counter_start;
 
     ChangePattern = false;
     ChangePatternNr = 0;
@@ -38,9 +35,6 @@ MODClass::MODClass(const char *filename, int samplerate)
     {
         mod_pattern[i] = NULL;
     }
-
-    volume_visual_counter_value = (1.0 / FPS) / VOLUME_VISUAL_DOWN_TIME;
-    akt_pattern_line_progress = 0.0f;
 
     ModRead(filename);
 }
@@ -517,7 +511,6 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
         channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
         channels[channel_nr].sample_finetune = mod_samples[note->sample_number-1].finetune;
-        channels[channel_nr].sample_pos = 2;
 
         channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
         channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
@@ -526,6 +519,26 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].loop_length = mod_samples[note->sample_number-1].loop_length;
         if(channels[channel_nr].loop_length > 2) channels[channel_nr].loop_enable = true;
         else channels[channel_nr].loop_enable = false;
+
+        if(note->effectcommand != 0x03)
+            channels[channel_nr].sample_pos = 2;
+        else
+        {
+            if(channels[channel_nr].loop_enable)
+            {
+                if(channels[channel_nr].sample_pos >= (channels[channel_nr].loop_start + channels[channel_nr].loop_length))
+                {
+                    channels[channel_nr].sample_pos = channels[channel_nr].loop_start;
+                }
+            }
+            else
+            {
+                if(channels[channel_nr].sample_pos >= channels[channel_nr].sample_length)
+                {
+                    channels[channel_nr].sample_pos = 2;
+                }
+            }
+        }
     }
 
     // Wenn Period == 0 dann keine Änderung der Periode
@@ -538,9 +551,11 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
         channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
 
-        channels[channel_nr].sample_pos = 2;
-
-        note_attack = true;
+        if(note->effectcommand != 0x03)
+        {
+            channels[channel_nr].sample_pos = 2;
+            note_attack = true;
+        }
     }
 
     // Effekte
@@ -685,19 +700,14 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 
     case 0x0F:      // SetSpeed
 
-
-        if(note->effectdata < 32)
-            thick_counter_start = note->effectdata;
-
-
-        /*
-        if(note->effectdata < 32)
+        if(note->effectdata != 0)
         {
-            set_song_speed = true;
-            set_song_speed_var = note->effectdata;
+            if(note->effectdata < 32)
+                speed = note->effectdata;
+            else
+                bpm = note->effectdata;
+            SetSongSpeed(bpm, speed);
         }
-        */
-
         break;
 
     default:
@@ -877,10 +887,27 @@ void MODClass::CalcNextThick()
     }
 }
 
+void MODClass::SetSongSpeed(int bpm, int speed)
+{
+    this->bpm = bpm;
+    this->speed = speed;
+
+    time_counter_start = samplerate / (bpm * 0.4);
+    time_counter = time_counter_start;
+
+    thick_counter_start = speed;
+    thick_counter = thick_counter_start;
+
+    volume_visual_counter_value = (1.0 / (bpm * 0.4)) / VOLUME_VISUAL_DOWN_TIME;
+    akt_pattern_line_progress = 0.0f;
+}
+
 void MODClass::ModPlay()
 {
-    thick_counter_start = 6;
-    thick_counter = thick_counter_start;
+    bpm = BPM_DEFAULT;
+    speed = SPEED_DEFAULT;
+
+    SetSongSpeed(bpm, speed);
 
     song_pos = 0;
     akt_pattern_line = 0;

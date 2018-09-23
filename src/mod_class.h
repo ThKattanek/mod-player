@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-20-2018                      //
+// last change: 09-23-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -18,16 +18,15 @@
 
 using namespace std;
 
-
 // Configure
 #define MAX_CHANNELS 64
 #define MAX_PATTERN 128
 #define MAX_ROW 64
 
-#define VOLUME_VISUAL_DOWN_TIME 0.7
+#define BPM_DEFAULT 125
+#define SPEED_DEFAULT 6
 
-#define PAL
-//#define NTSC
+#define VOLUME_VISUAL_DOWN_TIME 0.7
 
 enum MOD_TYPE_ID {_MK, _4CHN, _6CHN, _8CHN, _4FLT, _8FLT,_OCTA, _CH, _NST};
 
@@ -117,22 +116,6 @@ static const unsigned short PERIOD_TABLE[16][60] = {                        // t
     108 , 101 , 96  , 90  , 85  , 80  , 76  , 72  , 68  , 64  , 60  , 57 }};
 
 static const signed short VIBRATO_TABLE[32] = {0,24,49,74,97,120,141,161,180,197,212,224,235,244,250,253,255,253,250,244,235,224,212,197,180,161,141,120,97,74,49,24};
-
-#define PAL_FPS 50
-#define NTSC_FPS 60
-
-#define PAL_CLOCK 7093789.2
-#define NTSC_CLOCK 7159090.5
-
-#ifdef PAL
-    #define FPS PAL_FPS
-    #define CLOCK PAL_CLOCK
-#else
-        #ifdef NTSC
-            #define FPS NTSC_FPS
-            #define CLOCK NTSC_CLOCK
-    #endif
-#endif
 
 struct SAMPLE
 {
@@ -324,6 +307,7 @@ private:
     float CalcFrequCounterStart(int period);
     void CalcNextSamples(signed short *samples);
     void CalcNextThick();
+    void SetSongSpeed(int bpm, int speed);
 
     bool mod_is_loaded;
     ifstream file;
@@ -354,8 +338,11 @@ private:
     // MOD Playing
     bool    mod_is_playing;
 
-    int     time_counter_start;   // Samplerate / 50 for PAL or 60 for NTSC
+    int     bpm;
+    int     time_counter_start;
     int     time_counter;
+
+    int     speed;
     int     thick_counter_start;
     int     thick_counter;
 
