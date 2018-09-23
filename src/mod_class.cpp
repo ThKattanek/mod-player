@@ -679,6 +679,18 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         }
         break;
 
+    case 0x09:      // Set Sample Offset
+            if(note->effectdata > 0)
+            {
+                channels[channel_nr].sample_pos = note->effectdata * 0x100;
+                if(channels[channel_nr].sample_pos >= channels[channel_nr].sample_length)
+                {
+                    channels[channel_nr].sample_pos = 0;
+                    channels[channel_nr].play = false;
+                }
+            }
+        break;
+
     case 0x0A:      // Volume Slide
         slide_up = note->effectdata >> 4;
         slide_down = note->effectdata & 0x0f;
