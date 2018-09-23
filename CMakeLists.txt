@@ -212,6 +212,7 @@ if(WIN32)
     # Install all Datas
     install(FILES "fonts/Topaz_a1200_v1.0.ttf" DESTINATION ./)
     install(FILES "mods/mentald2.mod" DESTINATION ./)
+    install(FILES "mods/space_debris.mod" DESTINATION ./)
 
     # Sonstiges
     install(FILES "LICENSE" DESTINATION ./)
