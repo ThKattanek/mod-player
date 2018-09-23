@@ -156,12 +156,12 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
     {
         for(int i=0; i<length; i+=2)
         {
-            time_counter--;
+            time_counter -= 1.0;
             akt_pattern_line_progress += akt_pattern_line_progress_add;
 
-            if(time_counter == 0)
+            if(time_counter <= 0)
             {
-                time_counter = time_counter_start;
+                time_counter += time_counter_start;
                 thick_counter--;
                 if(thick_counter == 0)
                 {
@@ -498,6 +498,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     channels[channel_nr].slide_up = false;
     channels[channel_nr].slide_down = false;
 
+    // Slide to Note beenden
+    channels[channel_nr].slide_note = false;
+
     // Volume Slide beenden -> gilt nur für eine Line
     channels[channel_nr].volume_slide = 0;
 
@@ -511,9 +514,6 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].sample_data = mod_samples[note->sample_number-1].data;
         channels[channel_nr].sample_length = mod_samples[note->sample_number-1].length;
         channels[channel_nr].sample_finetune = mod_samples[note->sample_number-1].finetune;
-
-        channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
-        channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
 
         channels[channel_nr].loop_start = mod_samples[note->sample_number-1].loop_start;
         channels[channel_nr].loop_length = mod_samples[note->sample_number-1].loop_length;
@@ -548,14 +548,18 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
 
         channels[channel_nr].note_position_in_table = note->note_postion_in_table;
 
-        channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
-        channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
-
         if(note->effectcommand != 0x03)
         {
             channels[channel_nr].sample_pos = 2;
-            note_attack = true;
+            channels[channel_nr].period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
+            channels[channel_nr].frequ_counter_start = CalcFrequCounterStart(channels[channel_nr].period);
         }
+        else
+        {
+            channels[channel_nr].slide_note_destination_period = PERIOD_TABLE[channels[channel_nr].sample_finetune][channels[channel_nr].note_position_in_table];
+        }
+
+        note_attack = true;
     }
 
     // Effekte
@@ -601,6 +605,19 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     case 0x02:      // Slide down (Portamento Down)
         channels[channel_nr].slide_down = true;
         channels[channel_nr].slide_down_value = note->effectdata;
+        break;
+
+    case 0x03:      // Slide to note
+        if(channels[channel_nr].period != channels[channel_nr].slide_note_destination_period)
+        {
+            if(channels[channel_nr].period < channels[channel_nr].slide_note_destination_period)
+                channels[channel_nr].slide_note_direction = 0;  // up
+            else
+                channels[channel_nr].slide_note_direction = 1;  // down
+
+            channels[channel_nr].slide_note_speed = note->effectdata;
+            channels[channel_nr].slide_note = true;
+        }
         break;
 
     case 0x04:      // Vibrato
@@ -758,25 +775,28 @@ void MODClass::CalcNextSamples(signed short *samples)
                     scope_buffer_pos++;
                 }
 
-                channels[i].frequ_counter -= 1.0;
-                if(channels[i].frequ_counter < 0.0)
+                if(channels[i].frequ_counter_start > 0.0)
                 {
-                    channels[i].frequ_counter += channels[i].frequ_counter_start;
-                    channels[i].sample_pos++;
+                    channels[i].frequ_counter -= 1.0;
+                    if(channels[i].frequ_counter < 0.0)
+                    {
+                        channels[i].frequ_counter += channels[i].frequ_counter_start;
+                        channels[i].sample_pos++;
 
-                    if(channels[i].loop_enable)
-                    {
-                        if(channels[i].sample_pos == (channels[i].loop_start + channels[i].loop_length))
+                        if(channels[i].loop_enable)
                         {
-                            channels[i].sample_pos = channels[i].loop_start;
+                            if(channels[i].sample_pos == (channels[i].loop_start + channels[i].loop_length))
+                            {
+                                channels[i].sample_pos = channels[i].loop_start;
+                            }
                         }
-                    }
-                    else
-                    {
-                        if(channels[i].sample_pos == channels[i].sample_length)
+                        else
                         {
-                            channels[i].sample_pos = 2;
-                            channels[i].play = false;
+                            if(channels[i].sample_pos == channels[i].sample_length)
+                            {
+                                channels[i].sample_pos = 2;
+                                channels[i].play = false;
+                            }
                         }
                     }
                 }
@@ -839,6 +859,29 @@ void MODClass::CalcNextThick()
             }
         }
 
+        // Slide to Note
+        if(channels[i].slide_note)
+        {
+            if(channels[i].period != channels[i].slide_note_destination_period)
+            {
+                switch(channels[i].slide_note_direction)
+                {
+                case 0: // up
+                    channels[i].period += channels[i].slide_note_speed;
+                    if(channels[i].period > channels[i].slide_note_destination_period)
+                        channels[i].period = channels[i].slide_note_destination_period;
+                    break;
+                case 1: // down
+                    channels[i].period -= channels[i].slide_note_speed;
+                    if(channels[i].period < channels[i].slide_note_destination_period)
+                        channels[i].period = channels[i].slide_note_destination_period;
+                    break;
+                }
+                channels[i].frequ_counter_start = CalcFrequCounterStart(channels[i].period);
+            }
+            else channels[i].slide_note = false;
+        }
+
         // Vibrato
         if(channels[i].vibrato)
         {
@@ -898,25 +941,36 @@ void MODClass::SetSongSpeed(int bpm, int speed)
     thick_counter_start = speed;
     thick_counter = thick_counter_start;
 
+    akt_pattern_line_progress = 0.0;
+    akt_pattern_line_progress_add = 1.0 / (time_counter_start * thick_counter_start);
+
     volume_visual_counter_value = (1.0 / (bpm * 0.4)) / VOLUME_VISUAL_DOWN_TIME;
     akt_pattern_line_progress = 0.0f;
 }
 
 void MODClass::ModPlay()
 {
-    bpm = BPM_DEFAULT;
-    speed = SPEED_DEFAULT;
+    if(mod_is_loaded)
+    {
+        bpm = BPM_DEFAULT;
+        speed = SPEED_DEFAULT;
 
-    SetSongSpeed(bpm, speed);
+        SetSongSpeed(bpm, speed);
 
-    song_pos = 0;
-    akt_pattern_line = 0;
+        for(int i=0; i<mod_channel_count; i++)
+        {
+            channels[i].period = 0;
+            channels[i].frequ_counter = 0;
+            channels[i].frequ_counter_start = 0;
+        }
 
-    pattern_break = false;
+        song_pos = 0;
+        akt_pattern_line = 0;
 
-    NextLine();
+        pattern_break = false;
 
-    mod_is_playing = true;
+        mod_is_playing = true;
+    }
 }
 
 void MODClass::ModStop()

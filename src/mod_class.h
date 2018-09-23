@@ -168,6 +168,10 @@ struct CHANNEL
     int     slide_up_value = 0;
     bool    slide_down = false;
     int     slide_down_value = 0;
+    bool    slide_note = false;
+    int     slide_note_speed = 0;
+    int    slide_note_direction = 0;
+    int     slide_note_destination_period = 0;
     bool    cut_sample = false;
     int     cut_sample_counter = 0;
     bool    vibrato = false;
@@ -339,8 +343,8 @@ private:
     bool    mod_is_playing;
 
     int     bpm;
-    int     time_counter_start;
-    int     time_counter;
+    float   time_counter_start;
+    float   time_counter;
 
     int     speed;
     int     thick_counter_start;
