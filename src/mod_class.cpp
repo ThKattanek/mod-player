@@ -633,6 +633,29 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             channels[channel_nr].vibrato_depth = note->effectdata & 0x0f;
         break;
 
+    case 0x05:      // Continue Slide to note + Volume slide
+        channels[channel_nr].slide_note = true;
+
+        slide_up = note->effectdata >> 4;
+        slide_down = note->effectdata & 0x0f;
+
+        // Volume Slide
+        if(slide_up > 0)
+        {
+            channels[channel_nr].volume_slide = 1;
+            channels[channel_nr].volume_slide_value = slide_up;
+        }
+        else if(slide_down > 0)
+        {
+            channels[channel_nr].volume_slide = 2;
+            channels[channel_nr].volume_slide_value = slide_down;
+        }
+        else{
+            channels[channel_nr].volume_slide = 0;
+            channels[channel_nr].volume_slide_value = 0;
+        }
+        break;
+
     case 0x06:      // Continue Vibrato + Volume Slide
         channels[channel_nr].vibrato = true;
 
