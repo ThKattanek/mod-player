@@ -284,6 +284,10 @@ bool MODClass::ModRead(const char *filename)
         loop_length[0] = loop_length[1];
         loop_length[1] = tmp;
         mod_samples[i].loop_length *=2;
+
+        // Fix Loop Start
+        if((mod_samples[i].loop_start >= mod_samples[i].length) && (mod_samples[i].loop_length > 2))
+            mod_samples[i].loop_start = mod_samples[i].length - mod_samples[i].loop_length;
     }
 
     // MOD Song Length
