@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 09-21-2018                      //
+// last change: 09-24-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -82,9 +82,17 @@ int main(int argc, char *argv[])
     if(!mod->ModIsLoaded())
     {
         if(filename != NULL)
-            cerr << "Mod [" << filename <<  "] cannot loaded." << endl;
+           switch(mod->GetLoadError())
+           {
+           case 0x01:
+               cerr << "Not open! (" << filename << ") " << endl;
+               break;
+           case 0x02:
+               cerr << "To many Pattern !" << endl;
+               break;
+           }
         else
-            cerr << "Mod cannot loaded." << endl;
+            cerr << "Filename ???" << endl;
         return(0);
     }
 

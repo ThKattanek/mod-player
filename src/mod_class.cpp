@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-23-2018                      //
+// last change: 09-24-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -36,7 +36,16 @@ MODClass::MODClass(const char *filename, int samplerate)
         mod_pattern[i] = NULL;
     }
 
-    ModRead(filename);
+    if(!LoadMod(filename))
+    {
+        // Fehler beim laden
+        mod_is_loaded = false;
+    }
+    else
+    {
+        // Mod wurde geladen
+        mod_is_loaded = true;
+    }
 }
 
 MODClass::~MODClass()
@@ -183,15 +192,14 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
     }
 }
 
-bool MODClass::ModRead(const char *filename)
+bool MODClass::LoadMod(const char *filename)
 {
     ModStop();
-
-    mod_is_loaded = false;
 
     file.open(filename, ios::in | ios::binary);
     if(!file.is_open())
     {
+        mod_load_error = 0x01;
         return false;
     }
 
@@ -341,7 +349,6 @@ bool MODClass::ModRead(const char *filename)
         channels[i].volume = 1.0;
     }
 
-
     // Read Pattern Data
     if(mod_type_id == _NST)
         file.seekg(600, ios::beg);
@@ -349,6 +356,13 @@ bool MODClass::ModRead(const char *filename)
         file.seekg(1084, ios::beg);
 
     mod_pattern_size = MAX_ROW * mod_channel_count;
+
+    if(mod_pattern_count > MAX_PATTERN)
+    {
+        file.close();
+        mod_load_error = 0x02;
+        return false;
+    }
 
     for(int i=0; i<mod_pattern_count; i++)
     {
@@ -390,8 +404,13 @@ bool MODClass::ModRead(const char *filename)
     for(int i=0; i<mod_channel_count; i++)
         channels[i].mute = false;
 
-    mod_is_loaded = true;
+    mod_load_error = 0x00;
     return true;
+}
+
+int MODClass::GetLoadError()
+{
+    return mod_load_error;
 }
 
 void MODClass::NoteConvert(NOTE *note, bool direction)

@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-23-2018                      //
+// last change: 09-24-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -277,6 +277,18 @@ public:
     ///
     void FillAudioBuffer(signed short* stream, int length);
 
+    ///
+    /// \brief MODRead - reading a modfile
+    /// \param filename - filename to the modfile
+    ///
+    bool LoadMod(const char *filename);
+
+    ///
+    /// \brief GetLoadError
+    /// \return Errorcode - 0x00 - no error, 0x01 - mod not open, 0x02 - to many Pattern in this mod
+    ///
+    int  GetLoadError();
+
     void ModPlay(void);
     void ModStop(void);
     void ModPause(void);
@@ -294,12 +306,6 @@ public:
 
 private:
     ///
-    /// \brief MODRead - reading a modfile
-    /// \param filename - filename to the modfile
-    ///
-    bool ModRead(const char *filename);
-
-    ///
     /// \brief NoteConvert - convert the 'note from period to note' and 'octave or note an octave to note'
     /// \param note - pointer to a NOTE object
     /// \param direction - false = period to note | true = note to period
@@ -314,6 +320,7 @@ private:
     void SetSongSpeed(int bpm, int speed);
 
     bool mod_is_loaded;
+    int  mod_load_error;
     ifstream file;
 
     int samplerate;
@@ -337,7 +344,7 @@ private:
     unsigned short mod_pattern_size;
     unsigned char mod_pattern_count;
     unsigned char mod_channel_count;
-    NOTE *mod_pattern[128];
+    NOTE *mod_pattern[MAX_PATTERN];
 
     // MOD Playing
     bool    mod_is_playing;
