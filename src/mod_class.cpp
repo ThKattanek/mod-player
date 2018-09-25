@@ -718,7 +718,7 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         channels[channel_nr].tremolo_volume = channels[channel_nr].volume * 255;
 
         if(note_attack)
-            channels[channel_nr].tremolo = 0;   // Retrigger
+            channels[channel_nr].tremolo_pos = 0;   // Retrigger
         break;
 
     case 0x09:      // Set Sample Offset
