@@ -657,8 +657,8 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             channels[channel_nr].vibrato_speed = note->effectdata >> 4;
         if((note->effectdata & 0x0f) != 0)
             channels[channel_nr].vibrato_depth = note->effectdata & 0x0f;
-
-        channels[channel_nr].vibrato_pos = 0;   // Retrigger
+        if(note_attack)
+            channels[channel_nr].vibrato_pos = 0;   // Retrigger
         break;
 
     case 0x05:      // Continue Slide to note + Volume slide
@@ -715,8 +715,10 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         if((note->effectdata & 0x0f) != 0)
             channels[channel_nr].tremolo_depth = note->effectdata & 0x0f;
 
-        channels[channel_nr].tremolo_pos = 0; // Retrigger
         channels[channel_nr].tremolo_volume = channels[channel_nr].volume * 255;
+
+        if(note_attack)
+            channels[channel_nr].tremolo = 0;   // Retrigger
         break;
 
     case 0x09:      // Set Sample Offset
