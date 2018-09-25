@@ -657,6 +657,8 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             channels[channel_nr].vibrato_speed = note->effectdata >> 4;
         if((note->effectdata & 0x0f) != 0)
             channels[channel_nr].vibrato_depth = note->effectdata & 0x0f;
+
+        channels[channel_nr].vibrato_pos = 0;   // Retrigger
         break;
 
     case 0x05:      // Continue Slide to note + Volume slide
