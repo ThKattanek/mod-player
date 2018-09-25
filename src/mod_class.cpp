@@ -713,6 +713,7 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         if((note->effectdata & 0x0f) != 0)
             channels[channel_nr].tremolo_depth = note->effectdata & 0x0f;
 
+        channels[channel_nr].tremolo_pos = 0; // Retrigger
         channels[channel_nr].tremolo_volume = channels[channel_nr].volume * 255;
         break;
 
