@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-24-2018                      //
+// last change: 09-25-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -530,6 +530,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     // Vibrato beenden -> gilt nur für eine Line
     channels[channel_nr].vibrato = false;
 
+    // Tremolo beenden -> gilt nur für eine Line
+    channels[channel_nr].tremolo = false;
+
     if(note->sample_number > 0)
     {
         channels[channel_nr].volume = (mod_samples[note->sample_number-1].volume & 0x7f) / 64.0;   // Liniar Volume
@@ -700,6 +703,17 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             channels[channel_nr].volume_slide = 0;
             channels[channel_nr].volume_slide_value = 0;
         }
+        break;
+
+    case 0x07:      // Tremolo
+        channels[channel_nr].tremolo = true;
+
+        if((note->effectdata >> 4) != 0)
+            channels[channel_nr].tremolo_speed = note->effectdata >> 4;
+        if((note->effectdata & 0x0f) != 0)
+            channels[channel_nr].tremolo_depth = note->effectdata & 0x0f;
+
+        channels[channel_nr].tremolo_volume = channels[channel_nr].volume * 255;
         break;
 
     case 0x09:      // Set Sample Offset
@@ -955,6 +969,25 @@ void MODClass::CalcNextThick()
                 channels[i].vibrato_pos += channels[i].vibrato_speed;
                 channels[i].frequ_counter_start = CalcFrequCounterStart(channels[i].period + vm);
             }
+        }
+
+        // Tremolo
+        if(channels[i].tremolo)
+        {
+
+            int vmp = channels[i].tremolo_volume;
+
+            signed short vm = ((VIBRATO_TABLE[channels[i].tremolo_pos & 31] * channels[i].tremolo_depth) >> (6-2)); // Milky (7-2) -> hier dann größerer Effekt
+            if ((channels[i].tremolo_pos & 63) > 31) vm = -vm;
+
+            vmp += vm;
+
+            if(vmp < 0) vmp = 0;
+            if(vmp > 255) vmp = 255;
+
+            channels[i].tremolo_pos += channels[i].tremolo_speed;
+            channels[i].volume = vmp / 255.0;
+
         }
 
         // Volume Silde Up and Down

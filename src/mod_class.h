@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-24-2018                      //
+// last change: 09-25-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -178,6 +178,12 @@ struct CHANNEL
     int     vibrato_speed = 0;
     int     vibrato_depth = 0;
     int     vibrato_pos = 0;
+    bool    tremolo = false;
+    int     tremolo_speed = 0;
+    int     tremolo_depth = 0;
+    int     tremolo_pos = 0;
+    int     tremolo_volume = 0;
+    int     tremolo_final_volume = 0;
     float   volume_visual = 0.0;
 };
 
