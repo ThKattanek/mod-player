@@ -11,6 +11,7 @@
 //////////////////////////////////////////////////
 
 #include "mod_class.h"
+#include <iostream>
 
 // C-C#-D-D#-E-F-F#-G-G#-A-A#-H
 static const char* NOTE_STRING[12] = {"C-","C#","D-","D#","E-","F-","F#","G-","G#","A-","A#","B-"};
@@ -533,6 +534,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
     // Tremolo beenden -> gilt nur für eine Line
     channels[channel_nr].tremolo = false;
 
+    // Retrigger Sample -> gilt nur für eine Line
+    channels[channel_nr].retrigger_sample = false;
+
     if(note->sample_number > 0)
     {
         channels[channel_nr].volume = (mod_samples[note->sample_number-1].volume & 0x7f) / 64.0;   // Liniar Volume
@@ -721,6 +725,9 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
             channels[channel_nr].tremolo_pos = 0;   // Retrigger
         break;
 
+    case 0x08:      // Not Used
+        break;
+
     case 0x09:      // Set Sample Offset
             if(note->effectdata > 0)
             {
@@ -774,8 +781,13 @@ void MODClass::CalcChannelData(int channel_nr, NOTE *note)
         break;
 
     case 0x0E:      // Extended Effects
+            cout << "Extended Effect: " << (note->effectdata >> 4) << endl;
             switch(note->effectdata >> 4)
             {
+            case 0x09:  // Retrigger Sample
+                channels[channel_nr].retrigger_sample_counter = channels[channel_nr].retrigger_sample_speed = note->effectdata & 0x0f;
+                channels[channel_nr].retrigger_sample = true;
+                break;
             case 0x0A:  // Fine Volume Slide Up
                 channels[channel_nr].volume += ((note->effectdata & 0x0f) / 64.0f);
                 if(channels[channel_nr].volume > 1.0) channels[channel_nr].volume = 1.0;
@@ -1005,6 +1017,17 @@ void MODClass::CalcNextThick()
         {
             channels[i].volume -= (channels[i].volume_slide_value / 64.0f);
             if(channels[i].volume < 0.0) channels[i].volume = 0.0;
+        }
+
+        // Retrigger Sample
+        if(channels[i].retrigger_sample)
+        {
+            channels[i].retrigger_sample_counter--;
+            if(channels[i].retrigger_sample_counter == 0)
+            {
+                channels[i].retrigger_sample_counter = channels[i].retrigger_sample_speed;
+                channels[i].sample_pos = 0;
+            }
         }
 
         // Cut Sample

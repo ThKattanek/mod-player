@@ -184,6 +184,9 @@ struct CHANNEL
     int     tremolo_pos = 0;
     int     tremolo_volume = 0;
     int     tremolo_final_volume = 0;
+    bool    retrigger_sample = false;
+    int     retrigger_sample_speed = 0;
+    int     retrigger_sample_counter = 0;
     float   volume_visual = 0.0;
 };
 
