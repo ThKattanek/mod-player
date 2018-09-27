@@ -79,6 +79,9 @@ int main(int argc, char *argv[])
 
     mod = new MODClass(filename, AudioSampleRate);
 
+    int low_pass_cutoff_freq = 7500;
+    mod->SetLowPassCutOffFrequency(low_pass_cutoff_freq);
+
     if(!mod->ModIsLoaded())
     {
         if(filename != NULL)
@@ -219,9 +222,15 @@ int main(int argc, char *argv[])
 
 
                 case SDLK_PLUS:
+                    low_pass_cutoff_freq += 100;
+                    mod->SetLowPassCutOffFrequency(low_pass_cutoff_freq);
+                    cout << "LowPass Cut-Off Frequency: " << low_pass_cutoff_freq << endl;
                     break;
 
                 case SDLK_MINUS:
+                    low_pass_cutoff_freq -= 100;
+                    mod->SetLowPassCutOffFrequency(low_pass_cutoff_freq);
+                    cout << "LowPass Cut-Off Frequency: " << low_pass_cutoff_freq << endl;
                     break;
 
                 case SDLK_ESCAPE:

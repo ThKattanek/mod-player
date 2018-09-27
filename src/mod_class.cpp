@@ -1197,3 +1197,9 @@ void MODClass::SetScopeBuffer(float *buffer)
         scope_enable = true;
     }
 }
+
+void MODClass::SetLowPassCutOffFrequency(float cut_off_freq)
+{
+    lp_filterL->setCutOffFrequency(cut_off_freq);
+    lp_filterR->setCutOffFrequency(cut_off_freq);
+}

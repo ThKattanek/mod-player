@@ -23,6 +23,7 @@ public:
 private:
 	float output;
 	float cutOffFrequency;
+    float DeltaTime;
 	float ePow;
 };
 

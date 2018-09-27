@@ -315,6 +315,8 @@ public:
 
     void SetScopeBuffer(float* buffer);
 
+    void SetLowPassCutOffFrequency(float cut_off_freq);
+
 private:
     ///
     /// \brief NoteConvert - convert the 'note from period to note' and 'octave or note an octave to note'

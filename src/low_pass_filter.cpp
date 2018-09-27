@@ -13,8 +13,11 @@ LowPassFilter::LowPassFilter(float iCutOffFrequency):
 
 LowPassFilter::LowPassFilter(float iCutOffFrequency, float iDeltaTime):
 	output(0), 
-	cutOffFrequency(iCutOffFrequency),
-	ePow(1-exp(-iDeltaTime * iCutOffFrequency)){}
+    cutOffFrequency(iCutOffFrequency),
+    ePow(1-exp(-iDeltaTime * iCutOffFrequency)){
+
+    DeltaTime = iDeltaTime;
+}
 
 float LowPassFilter::update(float input){
 	return output += (input - output) * ePow;
@@ -41,6 +44,7 @@ void LowPassFilter::setCutOffFrequency(float input){
 		cutOffFrequency = 0;
 		std::cout << "Warning: A LowPassFilter instance has been configured with 0 Hz as cut-off frequency.";
 	}
+    ePow = 1-exp(-DeltaTime * cutOffFrequency);
 }
 
 void LowPassFilter::setDeltaTime(float deltaTime){
