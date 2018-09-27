@@ -112,6 +112,8 @@ set(SOURCES
     src/mod_class.h
     src/level_meter_class.cpp
     src/level_meter_class.h
+    src/low_pass_filter.cpp
+    src/low_pass_filter.h
 )
 
 ################### RESOURCEN #####################

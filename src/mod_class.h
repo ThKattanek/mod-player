@@ -13,6 +13,8 @@
 #ifndef MODCLASS_H
 #define MODCLASS_H
 
+#include "./low_pass_filter.h"
+
 #include <fstream>
 #include <cstring>
 
@@ -333,6 +335,9 @@ private:
     ifstream file;
 
     int samplerate;
+
+    LowPassFilter* lp_filterL;
+    LowPassFilter* lp_filterR;
 
     // Eventhandling
     bool ChangePattern;

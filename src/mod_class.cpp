@@ -20,6 +20,9 @@ MODClass::MODClass(const char *filename, int samplerate)
 {
     this->samplerate = samplerate;
 
+    lp_filterL = new LowPassFilter(8000, 1.0/samplerate);
+    lp_filterR = new LowPassFilter(8000, 1.0/samplerate);
+
     ChangePattern = false;
     ChangePatternNr = 0;
 
@@ -57,6 +60,9 @@ MODClass::~MODClass()
        if(mod_pattern != NULL)
            delete[] mod_pattern[i];
     }
+
+    delete lp_filterL;
+    delete lp_filterR;
 }
 
 bool MODClass::ModIsLoaded()
@@ -908,6 +914,26 @@ void MODClass::CalcNextSamples(signed short *samples)
     // simply mix only 8bit
     samples[0] *= (256 / mod_channel_count);
     samples[1] *= (256 / mod_channel_count);
+
+    // Test
+
+   float s0 = (float)samples[0] / 0xFFFF;
+   float s1 = (float)samples[1] / 0xFFFF;
+
+
+   lp_filterL->update(s0);
+   if(s0>1.0) s0=1.0;
+   if(s0<-0.0) s0=-0.0;
+   s0 = lp_filterL->getOutput();
+
+   lp_filterR->update(s1);
+   if(s1>1.0) s1=1;
+   if(s1<-0.0) s1=-0.0;
+   s1 = lp_filterR->getOutput();
+
+   samples[0] = s0 * 0xFFFF;
+   samples[1] = s1 * 0xFFFF;
+
 }
 
 void MODClass::CalcNextThick()
