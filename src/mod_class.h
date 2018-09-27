@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-25-2018                      //
+// last change: 09-27-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -315,6 +315,8 @@ public:
 
     void SetScopeBuffer(float* buffer);
 
+    void SetFilterStatus(bool enable);
+    bool GetFilterStatus(void);
     void SetLowPassCutOffFrequency(float cut_off_freq);
 
 private:
@@ -338,6 +340,7 @@ private:
 
     int samplerate;
 
+    bool    filter_is_enable;
     LowPassFilter* lp_filterL;
     LowPassFilter* lp_filterR;
 

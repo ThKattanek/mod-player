@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-25-2018                      //
+// last change: 09-27-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -20,6 +20,7 @@ MODClass::MODClass(const char *filename, int samplerate)
 {
     this->samplerate = samplerate;
 
+    filter_is_enable = true;
     lp_filterL = new LowPassFilter(8000, 1.0/samplerate);
     lp_filterR = new LowPassFilter(8000, 1.0/samplerate);
 
@@ -915,24 +916,25 @@ void MODClass::CalcNextSamples(signed short *samples)
     samples[0] *= (256 / mod_channel_count);
     samples[1] *= (256 / mod_channel_count);
 
-    // Test
 
-   float s0 = (float)samples[0] / 0xFFFF;
-   float s1 = (float)samples[1] / 0xFFFF;
+    if(filter_is_enable)
+    {
+        float s0 = (float)samples[0] / 0xFFFF;
+        float s1 = (float)samples[1] / 0xFFFF;
 
+        lp_filterL->update(s0);
+        if(s0>1.0) s0=1.0;
+        if(s0<-1.0) s0=-1.0;
+        s0 = lp_filterL->getOutput();
 
-   lp_filterL->update(s0);
-   if(s0>1.0) s0=1.0;
-   if(s0<-0.0) s0=-0.0;
-   s0 = lp_filterL->getOutput();
+        lp_filterR->update(s1);
+        if(s1>1.0) s1=1;
+        if(s1<-1.0) s1=-1.0;
+        s1 = lp_filterR->getOutput();
 
-   lp_filterR->update(s1);
-   if(s1>1.0) s1=1;
-   if(s1<-0.0) s1=-0.0;
-   s1 = lp_filterR->getOutput();
-
-   samples[0] = s0 * 0xFFFF;
-   samples[1] = s1 * 0xFFFF;
+        samples[0] = s0 * 0xFFFF;
+        samples[1] = s1 * 0xFFFF;
+    }
 
 }
 
@@ -1196,6 +1198,16 @@ void MODClass::SetScopeBuffer(float *buffer)
         scope_buffer = buffer;
         scope_enable = true;
     }
+}
+
+void MODClass::SetFilterStatus(bool enable)
+{
+    filter_is_enable = enable;
+}
+
+bool MODClass::GetFilterStatus()
+{
+    return filter_is_enable;
 }
 
 void MODClass::SetLowPassCutOffFrequency(float cut_off_freq)

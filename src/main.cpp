@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
 
     mod = new MODClass(filename, AudioSampleRate);
 
-    int low_pass_cutoff_freq = 7500;
+    int low_pass_cutoff_freq = 24000;   // A1200 ??
+    //int low_pass_cutoff_freq = 8000;    // A500 ??
     mod->SetLowPassCutOffFrequency(low_pass_cutoff_freq);
 
     if(!mod->ModIsLoaded())
@@ -220,6 +221,11 @@ int main(int argc, char *argv[])
                     else mod->SetChannelMute(event.key.keysym.sym - SDLK_1,true);
                     break;
 
+                case SDLK_f:
+                    if(mod->GetFilterStatus())
+                        mod->SetFilterStatus(false);
+                    else mod->SetFilterStatus(true);
+                    break;
 
                 case SDLK_PLUS:
                     low_pass_cutoff_freq += 100;
