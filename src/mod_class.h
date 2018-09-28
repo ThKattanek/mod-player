@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-27-2018                      //
+// last change: 09-28-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -234,6 +234,12 @@ public:
     /// \return jump end posistion as int
     ///
     int GetModSongEndJump();
+
+    ///
+    /// \brief GetModSongPos
+    /// \return
+    ///
+    int GetModSongPos();
 
     ///
     /// \brief GetModPatternTable - Get the song pattern Table with max. 128 entries

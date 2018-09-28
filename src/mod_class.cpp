@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-27-2018                      //
+// last change: 09-28-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -104,6 +104,11 @@ int MODClass::GetModSongEndJump()
     if(mod_is_loaded)
         return mod_song_end_jump;
     return 0;
+}
+
+int MODClass::GetModSongPos()
+{
+    return song_pos;
 }
 
 const unsigned char *MODClass::GetModPatternTable()

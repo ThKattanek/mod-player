@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 09-24-2018                      //
+// last change: 09-28-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -26,9 +26,9 @@ using namespace std;
 #define FONT_FILENAME "Topaz_a1200_v1.0.ttf"
 
 #ifdef _WIN32
-#define AUDIO_BUFFER_SIZE (882)    // 882 bei 44.100 Khz
+#define AUDIO_BUFFER_SIZE (735)    // 735 bei 44.100 Khz (44100 / 60)
 #else
-    #define AUDIO_BUFFER_SIZE (882)    // 882 bei 44.100 Khz
+    #define AUDIO_BUFFER_SIZE (735)    // 735 bei 44.100 Khz (44100 / 60)
 #endif
 
 void CutBackwartString(char* str, char c);
@@ -63,6 +63,9 @@ int main(int argc, char *argv[])
 
     SDL_Texture* tx_mute;
     SDL_Texture* tx[MAX_ROW];
+
+    SDL_Texture* tx_modname;
+    SDL_Texture* tx_songtbl;
 
     float* scope_buffer;
 
@@ -161,6 +164,32 @@ int main(int argc, char *argv[])
     SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
     SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
+
+    // for Song Title
+    SDL_Color color_modname = {220,220,220,0}; // Weiß
+    sf_tmp = TTF_RenderText_Blended(font1,mod->GetModName(),color_modname);
+    tx_modname = SDL_CreateTextureFromSurface(ren, sf_tmp);
+    SDL_FreeSurface(sf_tmp);
+
+    // create mod
+
+    const unsigned char* mod_pattern_tbl = mod->GetModPatternTable();
+    int mod_song_len = mod->GetModSongLength();
+    char mod_pattern_tbl_str[256*4];
+
+    mod_pattern_tbl_str[0] = 0;
+
+    for(int i=0; i<mod_song_len; i++)
+    {
+        char str[6];
+        sprintf(str,"%.2x ",mod_pattern_tbl[i]);
+        strcat(mod_pattern_tbl_str, str);
+    }
+
+    SDL_Color color_songtbl = {250,250,250,0};
+    sf_tmp = TTF_RenderText_Blended(font1,mod_pattern_tbl_str,color_songtbl);
+    tx_songtbl = SDL_CreateTextureFromSurface(ren, sf_tmp);
+    SDL_FreeSurface(sf_tmp);
 
     // for mute visusals
     SDL_Color color_mute = {220,0,0,0}; // RED
@@ -398,6 +427,47 @@ int main(int argc, char *argv[])
                 SDL_RenderCopy(ren, tx_mute,NULL,&rec1);
             }
         }
+
+        // Info Background and size
+        rec1.x = 0;
+        rec1.y = screensize_h - font_h * 3;
+        rec1.w = screensize_w;
+        rec1.h = font_h * 3;
+
+        SDL_SetRenderDrawColor(ren,80,80,80,180);
+        SDL_RenderFillRect(ren,&rec1);
+
+        // HLINE
+        SDL_SetRenderDrawColor(ren,0,0,80,255);
+        SDL_RenderDrawLine(ren,0,rec1.y,screensize_w,rec1.y);
+
+        // Draw Songname
+        SDL_QueryTexture(tx_modname, NULL, NULL, &w, &h);
+        rec1.w = w;
+        rec1.h = font_h;
+        rec1.x = screensize_w/2 - w/2;
+        rec1.y = screensize_h - font_h * 3 + 2;
+        SDL_RenderCopy(ren,tx_modname,NULL,&rec1);
+
+        // Song Tbl
+        SDL_QueryTexture(tx_songtbl, NULL, NULL, &w, &h);
+        rec1.w = w;
+        rec1.h = font_h;
+        rec1.x = screensize_w/2 - font_w * mod->GetModSongPos() * 3;
+        rec1.y = screensize_h - font_h * 1;
+        SDL_RenderCopy(ren,tx_songtbl,NULL,&rec1);
+
+        // Akt Pattern
+        rec1.x = screensize_w/2;
+        rec1.w = 2 * font_w + 4;
+        rec1.x -= 2;
+        rec1.y -= 2;
+        SDL_SetRenderDrawColor(ren,200,00,00,50);
+        SDL_RenderDrawRect(ren, &rec1);
+        SDL_RenderFillRect(ren,&rec1);
+
+        SDL_SetRenderDrawColor(ren,200,00,00,255);
+         SDL_RenderDrawRect(ren, &rec1);
 
         // Wieder auf Bildschirm rendern
         SDL_SetRenderTarget(ren, NULL);
