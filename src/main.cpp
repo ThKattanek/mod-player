@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
     SDL_Texture* tx_mute;
     SDL_Texture* tx[MAX_ROW];
 
-    SDL_Texture* tx_modname;
-    SDL_Texture* tx_songtbl;
+    SDL_Texture* tx_modname = NULL;
+    SDL_Texture* tx_songpos = NULL;
 
     float* scope_buffer;
 
@@ -169,26 +169,6 @@ int main(int argc, char *argv[])
     SDL_Color color_modname = {220,220,220,0}; // Weiß
     sf_tmp = TTF_RenderText_Blended(font1,mod->GetModName(),color_modname);
     tx_modname = SDL_CreateTextureFromSurface(ren, sf_tmp);
-    SDL_FreeSurface(sf_tmp);
-
-    // create mod
-
-    const unsigned char* mod_pattern_tbl = mod->GetModPatternTable();
-    int mod_song_len = mod->GetModSongLength();
-    char mod_pattern_tbl_str[256*4];
-
-    mod_pattern_tbl_str[0] = 0;
-
-    for(int i=0; i<mod_song_len; i++)
-    {
-        char str[6];
-        sprintf(str,"%.2x ",mod_pattern_tbl[i]);
-        strcat(mod_pattern_tbl_str, str);
-    }
-
-    SDL_Color color_songtbl = {250,250,250,0};
-    sf_tmp = TTF_RenderText_Blended(font1,mod_pattern_tbl_str,color_songtbl);
-    tx_songtbl = SDL_CreateTextureFromSurface(ren, sf_tmp);
     SDL_FreeSurface(sf_tmp);
 
     // for mute visusals
@@ -299,7 +279,14 @@ int main(int argc, char *argv[])
         // Chaeck of change playing pattern_row
         if(mod->CheckPatternRowChange(&play_row_nr))
         {
-            //GetStringFromPatterLine(str1, play_pattern_nr, play_row_nr);
+            // Speed[07] BPM[7D] Pos[03/30] Pat[05/33] Row[30/3F] Chn[04/04]
+            sprintf(str1,"Speed[%.2x] BPM[%.2x] Pos[%.2x/%.2x] Pat[%.2x/%.2x] Row[%.2x/%.2x]",mod->GetModSpeed(),mod->GetModBPM(),mod->GetModSongPos(),mod->GetModSongLength()-1,play_pattern_nr,mod->GetModPatterCount()-1,play_row_nr,MAX_ROW-1);
+            SDL_Color color_sonpos = {220,220,220,0};
+            sf_tmp = TTF_RenderText_Blended(font1,str1,color_sonpos);
+            if(tx_songpos != NULL)
+                SDL_DestroyTexture(tx_songpos);
+            tx_songpos = SDL_CreateTextureFromSurface(ren, sf_tmp);
+            SDL_FreeSurface(sf_tmp);
         }
 
         // Alles folgende Rendern in Textur - tex
@@ -449,25 +436,13 @@ int main(int argc, char *argv[])
         rec1.y = screensize_h - font_h * 3 + 2;
         SDL_RenderCopy(ren,tx_modname,NULL,&rec1);
 
-        // Song Tbl
-        SDL_QueryTexture(tx_songtbl, NULL, NULL, &w, &h);
+        // Song Pos
+        SDL_QueryTexture(tx_songpos, NULL, NULL, &w, &h);
         rec1.w = w;
         rec1.h = font_h;
-        rec1.x = screensize_w/2 - font_w * mod->GetModSongPos() * 3;
+        rec1.x = rec1.x = screensize_w/2 - w/2;
         rec1.y = screensize_h - font_h * 1;
-        SDL_RenderCopy(ren,tx_songtbl,NULL,&rec1);
-
-        // Akt Pattern
-        rec1.x = screensize_w/2;
-        rec1.w = 2 * font_w + 4;
-        rec1.x -= 2;
-        rec1.y -= 2;
-        SDL_SetRenderDrawColor(ren,200,00,00,50);
-        SDL_RenderDrawRect(ren, &rec1);
-        SDL_RenderFillRect(ren,&rec1);
-
-        SDL_SetRenderDrawColor(ren,200,00,00,255);
-         SDL_RenderDrawRect(ren, &rec1);
+        SDL_RenderCopy(ren,tx_songpos,NULL,&rec1);
 
         // Wieder auf Bildschirm rendern
         SDL_SetRenderTarget(ren, NULL);

@@ -260,6 +260,18 @@ public:
     int GetModChannelCount();
 
     ///
+    /// \brief GetModSpeed - Get speed from this mod
+    /// \return speed
+    ///
+    int GetModSpeed();
+
+    ///
+    /// \brief GetModBPM  - Get BPM from this mod
+    /// \return BMP
+    ///
+    int GetModBPM();
+
+    ///
     /// \brief GetModSample Get the SAMPLE object from this mod
     /// \param sample_nr Sample Number (1-15) or (1-31)
     /// \return Pointer SAMPLE

@@ -132,6 +132,22 @@ int MODClass::GetModChannelCount()
     return 0;
 }
 
+int MODClass::GetModSpeed()
+{
+    if(mod_is_loaded)
+        return speed;
+    else
+        return 0;
+}
+
+int MODClass::GetModBPM()
+{
+    if(mod_is_loaded)
+        return bpm;
+    else
+        return 0;
+}
+
 SAMPLE *MODClass::GetModSample(int sample_nr)
 {
     if(mod_is_loaded)
