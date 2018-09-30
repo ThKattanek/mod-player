@@ -52,6 +52,12 @@ int main(int argc, char *argv[])
     int screensize_w;
     int screensize_h;
 
+    int window_w;
+    int window_h;
+
+    float scale_w;
+    float scale_h;
+
     int font_w, font_h;
 
     char* filename;
@@ -155,13 +161,19 @@ int main(int argc, char *argv[])
     screensize_w = (4+12*mod->GetModChannelCount()) * font_w;
     screensize_h = 30 * font_h;
 
+    window_w = screensize_w;
+    window_h = screensize_h;
+
+    scale_w = 1.0;
+    scale_h = 1.0;
+
     SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
     SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2" );
 
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-    SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, screensize_w, screensize_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    SDL_Window *win = SDL_CreateWindow(filename, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, window_w, window_h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC) ;
     SDL_Texture *tex = SDL_CreateTexture(ren, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, screensize_w, screensize_h);
 
@@ -212,6 +224,21 @@ int main(int argc, char *argv[])
     {
         while (SDL_PollEvent(&event))
         {
+            if(event.type == SDL_WINDOWEVENT)
+            {
+                switch(event.window.event)
+                {
+                    case SDL_WINDOWEVENT_RESIZED:
+                    window_w = event.window.data1;
+                    window_h = event.window.data2;
+
+                    scale_w =  (float)screensize_w / window_w;
+                    scale_h =  (float)screensize_h / window_h;
+
+                    break;
+                }
+            }
+
             if (event.type == SDL_QUIT){
                 quit = true;
             }
@@ -256,7 +283,21 @@ int main(int argc, char *argv[])
                 }
             }
             if (event.type == SDL_MOUSEBUTTONDOWN){
-                // if push mousebutton
+                if(event.button.button == SDL_BUTTON_LEFT)
+                {
+                    // if push left mousebutton
+                   int x = event.button.x * scale_w;
+                   int y = event.button.y * scale_h;
+
+                   if(y < font_h * 3)
+                   {
+                       int i = ((float)x - font_w * 3 - 1) / (font_w * 12);
+
+                       if(mod->GetChannelMute(i))
+                           mod->SetChannelMute(i,false);
+                       else mod->SetChannelMute(i,true);
+                   }
+                }
             }
         }
 
