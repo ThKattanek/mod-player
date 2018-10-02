@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 09-28-2018                      //
+// last change: 10-02-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -26,9 +26,9 @@ using namespace std;
 #define FONT_FILENAME "Topaz_a1200_v1.0.ttf"
 
 #ifdef _WIN32
-#define AUDIO_BUFFER_SIZE (735)    // 735 bei 44.100 Khz (44100 / 60)
+#define AUDIO_BUFFER_SIZE (882)    // 735 bei 44.100 Khz (44100 / 50)
 #else
-    #define AUDIO_BUFFER_SIZE (735)    // 735 bei 44.100 Khz (44100 / 60)
+    #define AUDIO_BUFFER_SIZE (882)    // 735 bei 44.100 Khz (44100 / 50)
 #endif
 
 void CutBackwartString(char* str, char c);
