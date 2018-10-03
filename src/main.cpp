@@ -283,7 +283,7 @@ int main(int argc, char *argv[])
                 }
             }
             if (event.type == SDL_MOUSEBUTTONDOWN){
-                if(event.button.button == SDL_BUTTON_LEFT)
+                if(event.button.button == SDL_BUTTON_LEFT || event.button.button == SDL_BUTTON_RIGHT)
                 {
                     // if push left mousebutton
                    int x = event.button.x * scale_w;
@@ -293,9 +293,21 @@ int main(int argc, char *argv[])
                    {
                        int i = ((float)x - font_w * 3 - 1) / (font_w * 12);
 
-                       if(mod->GetChannelMute(i))
+                       switch(event.button.button)
+                       {
+                       case SDL_BUTTON_LEFT:
+
+                           if(mod->GetChannelMute(i))
+                               mod->SetChannelMute(i,false);
+                           else mod->SetChannelMute(i,true);
+                           break;
+
+                       case SDL_BUTTON_RIGHT:
+                           for(int ch=0; ch<mod->GetModChannelCount(); ch++)
+                               mod->SetChannelMute(ch,true);
                            mod->SetChannelMute(i,false);
-                       else mod->SetChannelMute(i,true);
+                           break;
+                      }
                    }
                 }
             }
