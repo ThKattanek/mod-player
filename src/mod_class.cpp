@@ -894,14 +894,13 @@ void MODClass::CalcNextSamples(float *samples)
             float* sample_data = channels[i].sample_data;
             if(sample_data != NULL)
             {
-                //if(i==0)
                 if(!channels[i].mute)
                 {
                     samples[cp] += sample_data[channels[i].sample_pos] * channels[i].volume;
                     samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
                     if(scope_enable)
                     {
-                        scope_buffer[scope_buffer_pos] = sample_data[channels[i].sample_pos] * channels[i].volume•;
+                        scope_buffer[scope_buffer_pos] = sample_data[channels[i].sample_pos] * channels[i].volume;
                         scope_buffer_pos++;
                     }
                 }
