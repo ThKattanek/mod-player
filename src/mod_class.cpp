@@ -190,6 +190,8 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
 {
     scope_buffer_pos = 0;
 
+    float l_r_sample[2];
+
     if(mod_is_playing)
     {
         for(int i=0; i<length; i+=2)
@@ -211,7 +213,9 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
                 }
                 CalcNextThick();
             }
-            CalcNextSamples(stream+i);
+            CalcNextSamples(l_r_sample);
+            stream[i] = l_r_sample[0] * 0xffff;
+            stream[i+1] = l_r_sample[1] * 0xffff;
         }
     }
     else
@@ -421,10 +425,21 @@ bool MODClass::LoadMod(const char *filename)
     {
         if(mod_samples[i].length > 0)
         {
+            char* smp_buffer = new char[mod_samples[i].length];
+
             if(mod_samples[i].data != NULL)
-                delete[] (char*)mod_samples[i].data;
-            mod_samples[i].data = new char[mod_samples[i].length];
-            file.read((char*)mod_samples[i].data,mod_samples[i].length);
+                delete[] mod_samples[i].data;
+
+            mod_samples[i].data = new float[mod_samples[i].length];
+
+            file.read(smp_buffer, mod_samples[i].length);
+
+            for(int ii=0; ii<mod_samples[i].length; ii++)
+            {
+                mod_samples[i].data[ii] = smp_buffer[ii]/255.0; // Bei 8 Bit Samples
+            }
+
+            delete[] smp_buffer;
         }
     }
 
@@ -864,10 +879,10 @@ float MODClass::CalcFrequCounterStart(int period)
     return period / 81.0f;
 }
 
-void MODClass::CalcNextSamples(signed short *samples)
+void MODClass::CalcNextSamples(float *samples)
 {
-    samples[0] = 0;
-    samples[1] = 0;
+    samples[0] = 0.0f;
+    samples[1] = 0.0f;
 
     for(int i=0; i<mod_channel_count; i++)
     {
@@ -876,7 +891,7 @@ void MODClass::CalcNextSamples(signed short *samples)
 
         if(channels[i].play)
         {
-            signed char *sample_data = (signed char*)channels[i].sample_data;
+            float* sample_data = channels[i].sample_data;
             if(sample_data != NULL)
             {
                 //if(i==0)
@@ -886,7 +901,7 @@ void MODClass::CalcNextSamples(signed short *samples)
                     samples[cpi] += sample_data[channels[i].sample_pos] * channels[i].volume * channel_pan;
                     if(scope_enable)
                     {
-                        scope_buffer[scope_buffer_pos] = (sample_data[channels[i].sample_pos] * channels[i].volume) / 255;
+                        scope_buffer[scope_buffer_pos] = sample_data[channels[i].sample_pos] * channels[i].volume•;
                         scope_buffer_pos++;
                     }
                 }
@@ -934,14 +949,13 @@ void MODClass::CalcNextSamples(signed short *samples)
     }
 
     // simply mix only 8bit
-    samples[0] *= (256 / mod_channel_count);
-    samples[1] *= (256 / mod_channel_count);
-
+    samples[0] /= mod_channel_count;
+    samples[1] /= mod_channel_count;
 
     if(filter_is_enable)
     {
-        float s0 = (float)samples[0] / 0xFFFF;
-        float s1 = (float)samples[1] / 0xFFFF;
+        float s0 = (float)samples[0];
+        float s1 = (float)samples[1];
 
         lp_filterL->update(s0);
         if(s0>1.0) s0=1.0;
@@ -953,8 +967,8 @@ void MODClass::CalcNextSamples(signed short *samples)
         if(s1<-1.0) s1=-1.0;
         s1 = lp_filterR->getOutput();
 
-        samples[0] = s0 * 0xFFFF;
-        samples[1] = s1 * 0xFFFF;
+        samples[0] = s0;
+        samples[1] = s1;
     }
 
 }

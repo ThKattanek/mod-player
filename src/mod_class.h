@@ -127,7 +127,7 @@ struct SAMPLE
     unsigned char   volume;         //  0-64
     unsigned short  loop_start;
     unsigned short  loop_length;
-    void*           data = NULL;
+    float*          data = NULL;
 };
 
 struct NOTE
@@ -157,7 +157,7 @@ struct CHANNEL
     bool    loop_enable = false;
     int     loop_start = 0;
     int     loop_length = 0;
-    void*   sample_data = NULL;
+    float*  sample_data = NULL;
     int     sample_length = 0;
     int     sample_pos = 2;
     int     sample_finetune = 0;
@@ -348,7 +348,7 @@ private:
     void NextLine(void);
     void CalcChannelData(int channel_nr, NOTE* note);
     float CalcFrequCounterStart(int period);
-    void CalcNextSamples(signed short *samples);
+    void CalcNextSamples(float *samples);
     void CalcNextThick();
     void SetSongSpeed(int bpm, int speed);
 
