@@ -430,9 +430,7 @@ int main(int argc, char *argv[])
         for(int i=0; i<channels; i++)
         {
             scope_x1[i] = scope_x2[i] = i * font_w * 12 + font_w * 3 + 1;
-
-
-            scope_y1[i] = scope_buffer[idx++] * scope_h + scope_y ;
+            scope_y1[i] = scope_buffer[idx++] * scope_h/2 + scope_y ;
         }
 
         SDL_SetRenderDrawColor(ren,180,180,180,255);
