@@ -445,7 +445,7 @@ int main(int argc, char *argv[])
             for(int chn=0; chn < channels; chn++)
             {
                 scope_x2[chn]++;
-                scope_y2[chn] = scope_buffer[idx] * scope_h + scope_y ;
+                scope_y2[chn] = scope_buffer[idx] * scope_h/2 + scope_y ;
                 SDL_RenderDrawLine(ren,scope_x1[chn],scope_y1[chn],scope_x2[chn],scope_y2[chn]);
                 scope_x1[chn] = scope_x2[chn];
                 scope_y1[chn] = scope_y2[chn];

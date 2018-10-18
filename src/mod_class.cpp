@@ -214,8 +214,8 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
                 CalcNextThick();
             }
             CalcNextSamples(l_r_sample);
-            stream[i] = l_r_sample[0] * 0xffff;
-            stream[i+1] = l_r_sample[1] * 0xffff;
+            stream[i] = l_r_sample[0] * 0x7fff;
+            stream[i+1] = l_r_sample[1] * 0x7fff;
         }
     }
     else
@@ -436,7 +436,9 @@ bool MODClass::LoadMod(const char *filename)
 
             for(int ii=0; ii<mod_samples[i].length; ii++)
             {
-                mod_samples[i].data[ii] = smp_buffer[ii]/255.0; // Bei 8 Bit Samples
+                mod_samples[i].data[ii] = smp_buffer[ii]/127.0; // Bei 8 Bit Samples
+                if(mod_samples[i].data[ii] < -1.0)
+                    mod_samples[i].data[ii] = -1.0;
             }
 
             delete[] smp_buffer;
