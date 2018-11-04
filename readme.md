@@ -2,8 +2,17 @@
 ## This is a MOD Player for *.mod files only, with variable counts of sound channels
 ### [Latest version here](https://github.com/ThKattanek/mod-player/releases/latest)
 
-
 ### [For many mods -- The Mod Archive](https://modarchive.org)
+
+## Execute under windows
+mod-player.exe filename
+
+## Execute under linux
+mod-player filename
+
+## Keys in mod-player
+* F - LowPass Filter on/off
+* 0-9 - Mute on/off channel 1-10 (0=10)
 
 ## Screenshot
 ![Screenshot](screenshot.png)
