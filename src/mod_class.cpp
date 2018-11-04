@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 09-28-2018                      //
+// last change: 11-04-2018                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -958,15 +958,13 @@ void MODClass::CalcNextSamples(float *samples)
         float s0 = (float)samples[0];
         float s1 = (float)samples[1];
 
-        lp_filterL->update(s0);
+        s0 = lp_filterL->update(s0);
         if(s0>1.0) s0=1.0;
         if(s0<-1.0) s0=-1.0;
-        s0 = lp_filterL->getOutput();
 
-        lp_filterR->update(s1);
+        s1 = lp_filterR->update(s1);
         if(s1>1.0) s1=1;
         if(s1<-1.0) s1=-1.0;
-        s1 = lp_filterR->getOutput();
 
         samples[0] = s0;
         samples[1] = s1;
