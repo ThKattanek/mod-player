@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 11-04-2018                      //
+// last change: 10-01-2019                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -41,16 +41,7 @@ MODClass::MODClass(const char *filename, int samplerate)
         mod_pattern[i] = NULL;
     }
 
-    if(!LoadMod(filename))
-    {
-        // Fehler beim laden
-        mod_is_loaded = false;
-    }
-    else
-    {
-        // Mod wurde geladen
-        mod_is_loaded = true;
-    }
+    LoadMod(filename);
 }
 
 MODClass::~MODClass()
@@ -228,6 +219,7 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
 bool MODClass::LoadMod(const char *filename)
 {
     ModStop();
+    mod_is_loaded = false;
 
     file.open(filename, ios::in | ios::binary);
     if(!file.is_open())
@@ -450,6 +442,7 @@ bool MODClass::LoadMod(const char *filename)
     for(int i=0; i<mod_channel_count; i++)
         channels[i].mute = false;
 
+    mod_is_loaded = true;
     mod_load_error = 0x00;
     return true;
 }
