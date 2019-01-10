@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 09-28-2018                      //
+// last change: 10-01-2019                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -15,6 +15,7 @@
 
 #include "./low_pass_filter.h"
 
+#include <stdlib.h>
 #include <fstream>
 #include <cstring>
 
