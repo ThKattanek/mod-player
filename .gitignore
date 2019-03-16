@@ -4,3 +4,4 @@ build
 build-*
 public_release
 install-*
+CMakeLists.txt.user.*
