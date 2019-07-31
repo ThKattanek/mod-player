@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 10-01-2019                      //
+// last change: 31-07-2019                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -306,6 +306,13 @@ public:
     /// \param length
     ///
     void FillAudioBuffer(signed short* stream, int length);
+
+    ///
+    /// \brief FillAudioBuffer
+    /// \param stream
+    /// \param length
+    ///
+    void FillAudioBuffer(float_t *stream, int length);
 
     ///
     /// \brief MODRead - reading a modfile

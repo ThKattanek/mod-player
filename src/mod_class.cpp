@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 10-01-2019                      //
+// last change: 31-07-2019                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -41,7 +41,16 @@ MODClass::MODClass(const char *filename, int samplerate)
         mod_pattern[i] = NULL;
     }
 
-    LoadMod(filename);
+    if(!LoadMod(filename))
+    {
+        // Fehler beim laden
+        mod_is_loaded = false;
+    }
+    else
+    {
+        // Mod wurde geladen
+        mod_is_loaded = true;
+    }
 }
 
 MODClass::~MODClass()
@@ -216,9 +225,49 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
     }
 }
 
+void MODClass::FillAudioBuffer(float_t *stream, int length)
+{
+    scope_buffer_pos = 0;
+
+    float l_r_sample[2];
+
+    if(mod_is_playing)
+    {
+        for(int i=0; i<length; i+=2)
+        {
+            time_counter -= 1.0;
+            akt_pattern_line_progress += akt_pattern_line_progress_add;
+
+            if(time_counter <= 0)
+            {
+                time_counter += time_counter_start;
+                thick_counter--;
+                if(thick_counter == 0)
+                {
+                    NextLine();
+
+                    thick_counter = thick_counter_start;
+                    akt_pattern_line_progress = 0.0;
+                    akt_pattern_line_progress_add = 1.0 / (time_counter_start * thick_counter_start);
+                }
+                CalcNextThick();
+            }
+            CalcNextSamples(l_r_sample);
+            stream[i] = l_r_sample[0];
+            stream[i+1] = l_r_sample[1];
+        }
+    }
+    else
+    {
+        for(int i=0; i<length; i+=2)
+           stream[i] = stream[i+1] = 0.0f;
+    }
+}
+
 bool MODClass::LoadMod(const char *filename)
 {
     ModStop();
+
     mod_is_loaded = false;
 
     file.open(filename, ios::in | ios::binary);
@@ -442,8 +491,8 @@ bool MODClass::LoadMod(const char *filename)
     for(int i=0; i<mod_channel_count; i++)
         channels[i].mute = false;
 
-    mod_is_loaded = true;
     mod_load_error = 0x00;
+    mod_is_loaded = true;
     return true;
 }
 
