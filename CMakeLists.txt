@@ -172,6 +172,9 @@ if(NOT WIN32)
     add_executable(${PROJECT_NAME} ${SOURCES})
 else()
     add_executable(${PROJECT_NAME} ${SOURCES})
+
+    ## For Consol Output
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-Wl,--enable-auto-import  -Wl,--subsystem,console ${CMAKE_EXE_LINKER_FLAGS}")
 endif()
 
 target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY})
