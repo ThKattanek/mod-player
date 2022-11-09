@@ -37,6 +37,8 @@ void GetStringFromPatterLine(char *output_str, int pattern_nr, int pattern_row_n
 
 MODClass* mod = NULL;
 
+static bool is_audioformat_float;
+
 #undef main
 int main(int argc, char *argv[])
 {
@@ -197,7 +199,11 @@ int main(int argc, char *argv[])
     SDL_AudioSpec want,have;
     SDL_memset(&want, 0, sizeof(want));
     want.freq = AudioSampleRate;
-    want.format = AUDIO_S16;
+	//want.format = AUDIO_S16;
+
+	want.format = AUDIO_F32;
+	is_audioformat_float = true;
+
     want.channels = 2;
     want.samples = AUDIO_BUFFER_SIZE;
     want.callback = AudioMix;
@@ -552,7 +558,10 @@ void CutBackwartString(char* str, char c)
 void AudioMix(void* userdat, Uint8 *stream, int length)
 {
     if(mod != NULL)
-        mod->FillAudioBuffer((signed short*)stream, length/2);
+		if(!is_audioformat_float)
+			mod->FillAudioBuffer((signed short*)stream, length/2);
+		else
+			mod->FillAudioBuffer((float_t*)stream, length/4);
     else
         for(int i=0; i<length; i++) stream[i] = 0;
 }
