@@ -88,7 +88,7 @@ int main(int argc, char *argv[])
     else
         filename = NULL;
 
-    mod = new MODClass(filename, AudioSampleRate);
+	mod = new MODClass(filename, AudioSampleRate);
 
     int low_pass_cutoff_freq = 24000;   // A1200 ??
     //int low_pass_cutoff_freq = 8000;    // A500 ??
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
 
         // Check of change playing pattern
         if(mod->CheckPatternChange(&play_pattern_nr))
-        {
+		{
             for(int i=0; i<MAX_ROW; i++)
             {
                 GetStringFromPatterLine(str1, play_pattern_nr, i);
@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 
         // Chaeck of change playing pattern_row
         if(mod->CheckPatternRowChange(&play_row_nr))
-        {
+		{
             // Speed[07] BPM[7D] Pos[03/30] Pat[05/33] Row[30/3F] Chn[04/04]
             sprintf(str1,"Speed[%.2x] BPM[%.2x] Pos[%.2x/%.2x] Pat[%.2x/%.2x] Row[%.2x/%.2x]",mod->GetModSpeed(),mod->GetModBPM(),mod->GetModSongPos(),mod->GetModSongLength()-1,play_pattern_nr,mod->GetModPatterCount()-1,play_row_nr,MAX_ROW-1);
             SDL_Color color_sonpos = {220,220,220,0};
@@ -530,7 +530,7 @@ int main(int argc, char *argv[])
     }
 
     TTF_Quit();
-    SDL_Quit();
+	SDL_Quit();
     return 0;
 }
 
@@ -559,10 +559,10 @@ void AudioMix(void* userdat, Uint8 *stream, int length)
 {
     if(mod != NULL)
 		if(!is_audioformat_float)
-			mod->FillAudioBuffer((signed short*)stream, length/2);
+			mod->FillAudioBuffer((signed short*)stream, length/sizeof(signed short));
 		else
-			mod->FillAudioBuffer((float_t*)stream, length/4);
-    else
+			mod->FillAudioBuffer((float*)stream, length/sizeof(float));
+	else
         for(int i=0; i<length; i++) stream[i] = 0;
 }
 

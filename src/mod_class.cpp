@@ -225,7 +225,7 @@ void MODClass::FillAudioBuffer(signed short *stream, int length)
     }
 }
 
-void MODClass::FillAudioBuffer(float_t *stream, int length)
+void MODClass::FillAudioBuffer(float *stream, int length)
 {
     scope_buffer_pos = 0;
 
@@ -244,24 +244,24 @@ void MODClass::FillAudioBuffer(float_t *stream, int length)
                 thick_counter--;
                 if(thick_counter == 0)
                 {
-                    NextLine();
+					NextLine();
 
                     thick_counter = thick_counter_start;
                     akt_pattern_line_progress = 0.0;
                     akt_pattern_line_progress_add = 1.0 / (time_counter_start * thick_counter_start);
                 }
-                CalcNextThick();
+				CalcNextThick();
             }
-            CalcNextSamples(l_r_sample);
-            stream[i] = l_r_sample[0];
-            stream[i+1] = l_r_sample[1];
+			CalcNextSamples(l_r_sample);
+			stream[i] = l_r_sample[0];
+			stream[i+1] = l_r_sample[1];
         }
     }
     else
     {
         for(int i=0; i<length; i+=2)
            stream[i] = stream[i+1] = 0.0f;
-    }
+	}
 }
 
 bool MODClass::LoadMod(const char *filename)
