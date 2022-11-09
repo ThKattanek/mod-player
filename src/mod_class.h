@@ -312,7 +312,7 @@ public:
     /// \param stream
     /// \param length
     ///
-    void FillAudioBuffer(float_t *stream, int length);
+	void FillAudioBuffer(float *stream, int length);
 
     ///
     /// \brief MODRead - reading a modfile

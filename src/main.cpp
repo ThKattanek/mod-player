@@ -37,6 +37,8 @@ void GetStringFromPatterLine(char *output_str, int pattern_nr, int pattern_row_n
 
 MODClass* mod = NULL;
 
+static bool is_audioformat_float;
+
 #undef main
 int main(int argc, char *argv[])
 {
@@ -86,7 +88,7 @@ int main(int argc, char *argv[])
     else
         filename = NULL;
 
-    mod = new MODClass(filename, AudioSampleRate);
+	mod = new MODClass(filename, AudioSampleRate);
 
     int low_pass_cutoff_freq = 24000;   // A1200 ??
     //int low_pass_cutoff_freq = 8000;    // A500 ??
@@ -197,7 +199,11 @@ int main(int argc, char *argv[])
     SDL_AudioSpec want,have;
     SDL_memset(&want, 0, sizeof(want));
     want.freq = AudioSampleRate;
-    want.format = AUDIO_S16;
+	//want.format = AUDIO_S16;
+
+	want.format = AUDIO_F32;
+	is_audioformat_float = true;
+
     want.channels = 2;
     want.samples = AUDIO_BUFFER_SIZE;
     want.callback = AudioMix;
@@ -315,7 +321,7 @@ int main(int argc, char *argv[])
 
         // Check of change playing pattern
         if(mod->CheckPatternChange(&play_pattern_nr))
-        {
+		{
             for(int i=0; i<MAX_ROW; i++)
             {
                 GetStringFromPatterLine(str1, play_pattern_nr, i);
@@ -331,7 +337,7 @@ int main(int argc, char *argv[])
 
         // Chaeck of change playing pattern_row
         if(mod->CheckPatternRowChange(&play_row_nr))
-        {
+		{
             // Speed[07] BPM[7D] Pos[03/30] Pat[05/33] Row[30/3F] Chn[04/04]
             sprintf(str1,"Speed[%.2x] BPM[%.2x] Pos[%.2x/%.2x] Pat[%.2x/%.2x] Row[%.2x/%.2x]",mod->GetModSpeed(),mod->GetModBPM(),mod->GetModSongPos(),mod->GetModSongLength()-1,play_pattern_nr,mod->GetModPatterCount()-1,play_row_nr,MAX_ROW-1);
             SDL_Color color_sonpos = {220,220,220,0};
@@ -524,7 +530,7 @@ int main(int argc, char *argv[])
     }
 
     TTF_Quit();
-    SDL_Quit();
+	SDL_Quit();
     return 0;
 }
 
@@ -552,8 +558,11 @@ void CutBackwartString(char* str, char c)
 void AudioMix(void* userdat, Uint8 *stream, int length)
 {
     if(mod != NULL)
-        mod->FillAudioBuffer((signed short*)stream, length/2);
-    else
+		if(!is_audioformat_float)
+			mod->FillAudioBuffer((signed short*)stream, length/sizeof(signed short));
+		else
+			mod->FillAudioBuffer((float*)stream, length/sizeof(float));
+	else
         for(int i=0; i<length; i++) stream[i] = 0;
 }
 
