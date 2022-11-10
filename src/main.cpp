@@ -38,6 +38,7 @@ void GetStringFromPatterLine(char *output_str, int pattern_nr, int pattern_row_n
 MODClass* mod = NULL;
 
 static bool is_audioformat_float;
+static int audio_buffer_size;
 
 #undef main
 int main(int argc, char *argv[])
@@ -110,12 +111,6 @@ int main(int argc, char *argv[])
             cerr << "Filename ???" << endl;
         return(0);
     }
-
-    // Scopes
-    scope_buffer = new float[MAX_CHANNELS * AUDIO_BUFFER_SIZE];
-    for(int i=0; i<MAX_CHANNELS * AUDIO_BUFFER_SIZE; i++) scope_buffer[i] = 0.0;
-
-    mod->SetScopeBuffer(scope_buffer);
 
     if (TTF_Init() < 0)
     {
@@ -218,6 +213,14 @@ int main(int argc, char *argv[])
     {
         cerr << "Audio Format \"AUDIO_S16 wird nicht unterstuetzt." << endl;
     }
+
+	audio_buffer_size = have.samples;
+
+	// Scopes
+	scope_buffer = new float[MAX_CHANNELS * audio_buffer_size];
+	for(int i=0; i<MAX_CHANNELS * audio_buffer_size; i++) scope_buffer[i] = 0.0;
+
+	mod->SetScopeBuffer(scope_buffer);
 
     SDL_PauseAudio(0);
 
@@ -441,11 +444,11 @@ int main(int argc, char *argv[])
 
         SDL_SetRenderDrawColor(ren,180,180,180,255);
 
-        float t1 = 1.0 / scope_w;
+		float t1 = 1.0 / scope_w;
 
-        for(int x=1; x<scope_w; x++)
+		for(int x=1; x<scope_w; x++)
         {
-            int idx = int(t1 * x * AUDIO_BUFFER_SIZE) * channels;
+			int idx = int(t1 * x * audio_buffer_size) * channels;
             for(int chn=0; chn < channels; chn++)
             {
                 scope_x2[chn]++;
