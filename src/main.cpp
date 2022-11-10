@@ -5,7 +5,7 @@
 //                                              //
 // #file: main.cpp                              //
 //                                              //
-// last change: 10-02-2018                      //
+// last change: 09-11-2022                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////

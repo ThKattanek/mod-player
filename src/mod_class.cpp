@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 31-07-2019                      //
+// last change: 10-11-2022                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -321,6 +321,18 @@ bool MODClass::LoadMod(const char *filename)
         else
         {
             mod_type_id = _NST; // The old NST format with 15 Samples and not ID-Tag
+
+			// Check of S3M File
+			file.seekg(44, ios::beg);
+			file.read((char*)mod_type, 4);
+			file.seekg(20, ios::beg);
+			mod_type[4] = 0;
+
+			if(!strcmp((const char*)mod_type, "SCRM"))
+			{
+				cout << "The S3M Format is not supported!" << endl;
+				return false;
+			}
         }
     }
 

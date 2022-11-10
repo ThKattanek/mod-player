@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.h                           //
 //                                              //
-// last change: 31-07-2019                      //
+// last change: 10-11-2022                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -385,7 +385,7 @@ private:
     SAMPLE mod_samples[31];
     unsigned char mod_song_length;
     unsigned char mod_song_end_jump;
-    unsigned char mod_pattern_tbl[128];
+	unsigned char mod_pattern_tbl[128];
     unsigned short mod_pattern_size;
     unsigned char mod_pattern_count;
     unsigned char mod_channel_count;
