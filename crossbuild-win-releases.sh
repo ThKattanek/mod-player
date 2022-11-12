@@ -91,6 +91,7 @@ if [ $i686_ok ]; then
     7z a -t7z -m0=LZMA -mmt=on -mx=9 -md=96m -mfb=256 $install_i686_dir".7z" $install_i686_dir
 
     rm -rf $install_i686_dir
+    sha512sum -b $project_name"_"$version"_win_x32.7z" >> $project_name"_"$version"_win_x32.7z.sha512"
 fi
 
 ### 64Bit Static
@@ -124,6 +125,7 @@ if [ $x86_64_ok ]; then
     7z a -t7z -m0=LZMA -mmt=on -mx=9 -md=96m -mfb=256 $install_x86_64_dir".7z" $install_x86_64_dir
 
     rm -rf $install_x86_64_dir
+    sha512sum -b $project_name"_"$version"_win_x64.7z" >> $project_name"_"$version"_win_x64.7z.sha512"
 fi
 
 cd ..
