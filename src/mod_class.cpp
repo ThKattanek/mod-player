@@ -5,7 +5,7 @@
 //                                              //
 // #file: mod_class.cpp                         //
 //                                              //
-// last change: 10-11-2022                      //
+// last change: 12-11-2022                      //
 // https://github.com/ThKattanek/mod-player     //
 //                                              //
 //////////////////////////////////////////////////
@@ -382,6 +382,12 @@ bool MODClass::LoadMod(const char *filename)
         // Fix Loop Start
         if((mod_samples[i].loop_start >= mod_samples[i].length) && (mod_samples[i].loop_length > 2))
             mod_samples[i].loop_start = mod_samples[i].length - mod_samples[i].loop_length;
+
+		// Warnig output when loop overlay
+		if(((mod_samples[i].loop_start + mod_samples[i].loop_length)) >  mod_samples[i].loop_length)
+		{
+			cout << "Warning: The sample loop-end is greater as sample-length. (Nr.: " << i+1 << ")" << endl;
+		}
     }
 
     // MOD Song Length
@@ -976,7 +982,7 @@ void MODClass::CalcNextSamples(float *samples)
 
                         if(channels[i].loop_enable)
                         {
-                            if(channels[i].sample_pos == (channels[i].loop_start + channels[i].loop_length))
+							if((channels[i].sample_pos == (channels[i].loop_start + channels[i].loop_length)) || (channels[i].sample_pos == channels[i].sample_length))
                             {
                                 channels[i].sample_pos = channels[i].loop_start;
                             }
