@@ -22,6 +22,13 @@ if(NOT CMAKE_BUILD_TYPE)
         message(STATUS "CMAKE_BUILD_TYPE NOT FOUND -- Default setting to Release")
 endif()
 
+set(IS_DEBUG_BUILD CMAKE_BUILD_TYPE STREQUAL "Debug")
+
+# Indication to the code that this is a debug build
+if (${IS_DEBUG_BUILD})
+    add_compile_definitions(__DEBUG__)
+endif ()
+
 # Standard WIN32_STATIC_BUILD = FALSE
 if(NOT WIN32_STATIC_BUILD)
         set(WIN32_STATIC_BUILD FALSE CACHE STRING "Choose a static or shared win32 build (TRUE or FALSE)" FORCE)

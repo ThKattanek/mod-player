@@ -384,10 +384,12 @@ bool MODClass::LoadMod(const char *filename)
             mod_samples[i].loop_start = mod_samples[i].length - mod_samples[i].loop_length;
 
 		// Warnig output when loop overlay
+#ifdef __DEBUG__
 		if(((mod_samples[i].loop_start + mod_samples[i].loop_length)) >  mod_samples[i].loop_length)
 		{
 			cout << "Warning: The sample loop-end is greater as sample-length. (Nr.: " << i+1 << ")" << endl;
 		}
+#endif
     }
 
     // MOD Song Length
