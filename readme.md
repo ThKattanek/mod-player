@@ -32,8 +32,17 @@ mkdir build
 cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 make
-make install
+sudo make install
 ```
+oder
+```bash
+git clone https://github.com/ThKattanek/mod-player.git
+cd mod-player
+cmake -B build
+cmake --build build -j${nproc}
+sudo cmake --install build
+```
+
 Optionaly -DCMAKE_INSTALL_PREFIX=[InstallPfad] can be used.
 
 ## Uninstall
